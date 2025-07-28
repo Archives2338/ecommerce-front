@@ -1,0 +1,17 @@
+<!-- Indicador de carga -->
+<div *ngIf="isLoading" class="loading-container">
+  <div class="loading-spinner"></div>
+  <p>Cargando contenido...</p>
+</div>
+
+<!-- Error de carga -->
+<div *ngIf="loadingError && !isLoading" class="error-container">
+  <p>Error al cargar el contenido. Mostrando contenido por defecto.</p>
+  <button (click)="refreshContent()" class="retry-button">Reintentar</button>
+</div>
+
+<!-- Contenido principal -->
+<div *ngIf="!isLoading" class="main-content">
+  <app-header [preloadedContent]="headerContent"></app-header>
+  <app-home [preloadedContent]="homeContent"></app-home>
+</div>

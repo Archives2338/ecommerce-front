@@ -1,0 +1,268 @@
+<div class="body" *ngIf="!isLoading">
+    <div class="signboard-wrapper-box">
+        <h2>{{ homeContent?.home1 || 'Comparta la suscripción premium más barato en StreamingCommerce' }}</h2>
+        <h3 *ngIf="homeContent?.['home35']">{{ homeContent?.['home35'] }}</h3>
+
+        <!-- Poster solo se muestra si hay datos reales incluyendo home2 -->
+        <div class="poster"
+            *ngIf="homeContent?.home2 && (homeContent?.home3 || homeContent?.home4 || homeContent?.home5)">
+            <div class="flex-1 poster-block" *ngIf="homeContent?.home3">
+                <p class="users title">
+                    <span>{{ homeContent?.home3 }}</span> +
+                </p>
+                <p class="desc">{{ homeContent?.home2 || 'Usuarios' }}</p>
+            </div>
+            <div class="flex-1 poster-block" *ngIf="homeContent?.home4">
+                <p class="users title">
+                    <span>{{ homeContent?.home4 }}</span> + años
+                </p>
+                <p class="desc">Funcionando</p>
+            </div>
+            <div class="flex-1 poster-block" *ngIf="homeContent?.home5">
+                <p class="users title">
+                    <span>{{ homeContent?.home5 }}</span> +
+                </p>
+                <p class="desc">{{ homeContent?.home6 || 'Participaciones' }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="svg-box">
+        <svg class="svg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none"
+            version="1.1" viewBox="0 0 1920 30" preserveAspectRatio="none">
+            <g>
+                <path
+                    d="M0,0C0,0,1920,0,1920,0C1920,0,1920,30,1920,30C1920,30,1496.5,-1.66533e-15,961.5,0C426.5,1.66533e-15,0,30,0,30C0,30,0,0,0,0Z"
+                    fill-rule="evenodd" fill="#EF534F" fill-opacity="1"></path>
+            </g>
+        </svg>
+    </div>
+
+    <div data-v-d74d90c0="" class="bg-box"></div>
+
+    <div class="products-grid">
+        <div class="products-container" *ngIf="!isLoadingProducts && streamingProducts.length > 0">
+            <article class="product-card" *ngFor="let product of streamingProducts; let i = index"
+                [attr.data-index]="i">
+                <!-- Card Header con imagen del servicio -->
+                <header class="card-header">
+                    <figure class="service-logo">
+                        <img [src]="product.image" [alt]="product.type_name"
+                            (error)="onImageError($event, 'assets/img/services/default.webp')" loading="lazy">
+                    </figure>
+
+                    <!-- Background decorativo -->
+                    <img class="card-background" src="assets/svg/e-commerce/card.svg" alt="Card background"
+                        role="presentation" />
+
+                    <!-- Información de la tarjeta -->
+                    <div class="card-info">
+                        <div class="user-activity">
+                            <!-- Swiper de usuarios recientes -->
+                            <div class="users-showcase"
+                                [attr.aria-label]="'Usuarios recientes: ' + (product.recent_order ? product.recent_order.length : 0)">
+                                <div class="category-showcase"
+                                    *ngIf="product.recent_order && product.recent_order.length > 0; else noUsers">
+                                    <swiper-container [attr.id]="'swiper-' + i" init="false">
+                                        <!-- Cada avatar individual es un slide separado -->
+                                        <ng-container
+                                            *ngFor="let order of product.recent_order; let orderIndex = index">
+                                            <!-- Slide del avatar real -->
+                                            <swiper-slide class="swiper-slide">
+                                                <img class="category-avator user-avatar" [src]="order.avatar_url"
+                                                    [alt]="'Usuario: ' + order.user_name" [title]="order.user_name"
+                                                    (error)="onImageError($event, 'https://gosplit.oss-us-east-1.aliyuncs.com/image/default12.png')"
+                                                    loading="lazy">
+                                            </swiper-slide>
+                                        </ng-container>
+
+                                        <!-- Slides de avatares placeholder para completar el loop -->
+                                        <swiper-slide *ngFor="let j of createDefaultAvatarArray(8)"
+                                            class="swiper-slide">
+                                            <img class="category-avator user-avatar placeholder"
+                                                src="https://gosplit.oss-us-east-1.aliyuncs.com/image/default12.png"
+                                                alt="Usuario placeholder" loading="lazy">
+                                        </swiper-slide>
+                                    </swiper-container>
+                                </div>
+
+                                <!-- Template para cuando no hay usuarios -->
+                                <ng-template #noUsers>
+                                    <div class="category-showcase">
+                                        <div class="avatar-group">
+                                            <img class="category-avator user-avatar placeholder"
+                                                *ngFor="let j of createDefaultAvatarArray(5)"
+                                                src="https://gosplit.oss-us-east-1.aliyuncs.com/image/default12.png"
+                                                alt="Usuario placeholder" loading="lazy">
+                                        </div>
+                                    </div>
+                                </ng-template>
+
+                                <button class="add-user-btn buttom" type="button" aria-label="Unirse al grupo"
+                                    title="Unirse al grupo">
+                                    <img src="https://static.gamsgocdn.com/gg2/images/index/plus.webp" alt="Icono más"
+                                        loading="lazy" />
+                                </button>
+                            </div>
+
+                            <!-- Información de actividad dinámica -->
+                            <div class="category-tips">
+                                <p>{{ getActivityText(product, i) }}</p>
+                            </div>
+                        </div>
+
+                        <!-- Pricing -->
+                        <div class="pricing">
+                            <span class="price">
+                                <span class="currency" [innerHTML]="product.currency_icon1"></span>{{ product.min_price
+                                }}
+                            </span>
+                            <span class="period">/ mes</span>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- Category Bottom con descripción y acciones -->
+                <section class="category-bottom">
+                    <div class="features-container">
+                        <ul class="part" role="list">
+                            <li *ngFor="let description of product.description; let descIndex = index"
+                                [class.hidden]="!isProductExpanded(i) && descIndex >= 3">
+                                <span class="iconfont icon-check"></span>
+                                <span class="content">{{ description }}</span>
+                            </li>
+                        </ul>
+
+                        <div class="view-more-box" *ngIf="product.description && product.description.length > 3"
+                            (click)="toggleProductDetails(i)">
+                            <div class="view-arrow" [style.opacity]="isProductExpanded(i) ? 0.5 : 1"
+                                [class.expanded]="isProductExpanded(i)"></div>
+                            <div class="view-arrow" [style.opacity]="isProductExpanded(i) ? 1 : 0.5"
+                                [class.expanded]="isProductExpanded(i)"></div>
+                        </div>
+                    </div>
+
+                    <button type="button" class="category-btn letter-big" (click)="onBuyProduct(product)"
+                        [attr.aria-label]="'Comprar ' + product.type_name">
+                        <span class="v-btn__content">COMPRAR AHORA</span>
+                    </button>
+
+                    <a class="details-link" [routerLink]="['/service', product.detail_route]"
+                        [attr.aria-label]="'Ver detalles de ' + product.type_name">
+                        Revisar detalles
+                    </a>
+                </section>
+            </article>
+        </div>
+
+        <!-- Loading state optimizado -->
+        <div class="loading-state" *ngIf="isLoadingProducts" role="status" aria-live="polite">
+            <div class="loading-spinner" aria-hidden="true"></div>
+            <p class="loading-text">Cargando servicios de streaming...</p>
+        </div>
+
+        <!-- Empty state optimizado -->
+        <div class="empty-state" *ngIf="!isLoadingProducts && streamingProducts.length === 0" role="status">
+            <p class="empty-message">No hay servicios disponibles en este momento</p>
+            <small class="empty-submessage">Por favor, inténtelo más tarde o contacte con soporte</small>
+        </div>
+    </div>
+
+    <div class="why-wrapper-box">
+        <h3>
+            {{ homeContent?.['home11'] || '¿Por qué más y más personas usan StreamingCommerce?' }}
+        </h3>
+        <ul class="why-box">
+            <li>
+                <div class="card">
+                    <div class="icon-box mr-6">
+                        <div class="rocket icon"></div>
+                    </div>
+                    <div class="intro">
+                        <h4>{{ homeContent?.['home12'] || 'Entrega en tiempo real' }}</h4>
+                        <div class="desc">
+                            {{ homeContent?.['home13'] || 'Entrega en tiempo real después del pago sin esperas,
+                            llegadarápida para disipar sus preocupaciones' }}
+                        </div>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="card">
+                    <div class="icon-box mr-6">
+                        <div class="pwd icon"></div>
+                    </div>
+                    <div class="intro">
+                        <h4>{{ homeContent?.['home14'] || 'RESET RÁPIDO' }}</h4>
+                        <div class="desc">
+                            {{ homeContent?.['home15'] || 'Haga clic en restablecer llave maestra en la página de
+                            suscripción sin espera ni operación manual' }}
+                        </div>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="card">
+                    <div class="icon-box mr-6">
+                        <div class="ssl icon"></div>
+                    </div>
+                    <div class="intro">
+                        <h4>{{ homeContent?.['home16'] || 'EL CERTIFICADO SSL' }}</h4>
+                        <div class="desc">
+                            {{ homeContent?.['home17'] || 'El pago se realiza en la condición segura con el certificado
+                            de seguridad SSL' }}
+                        </div>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="card">
+                    <div class="icon-box mr-6">
+                        <div class="support icon"></div>
+                    </div>
+                    <div class="intro">
+                        <h4>{{ homeContent?.['home18'] || '24/7 LA ASISTENCIA EN DIRECTO' }}</h4>
+                        <div class="desc">
+                            {{ homeContent?.['home19'] || 'brinda servicio al cliente privado en línea las 24 horas, los
+                            7 días de la semana, lo ayudará a tener una buena experiencia' }}
+                        </div>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="card">
+                    <div class="icon-box mr-6">
+                        <div class="subscriber icon"></div>
+                    </div>
+                    <div class="intro">
+                        <h4>{{ homeContent?.['home20'] || 'SUSCRITOS COMPARTIDOS APROPIADOS' }}</h4>
+                        <div class="desc">
+                            {{ homeContent?.['home21'] || 'Compartir las suscripciones premium más barato. Suscritos
+                            compartidos tienen la prioridad a corresponder a los de mismo país' }}
+                        </div>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="card">
+                    <div class="icon-box mr-6">
+                        <div class="refund icon"></div>
+                    </div>
+                    <div class="intro">
+                        <h4>{{ homeContent?.['home22'] || 'GARANTÍA DE REEMBOLSO' }}</h4>
+                        <div class="desc">
+                            {{ homeContent?.['home23'] || 'Entrega en tiempo real después del pago sin esperas, llegada
+                            rápida para disipar sus preocupaciones tiene de 1 a 20 días para solicitar el reembolso' }}
+                        </div>
+                    </div>
+                </div>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<!-- Loading state -->
+<div *ngIf="isLoading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Cargando contenido del home...</p>
+</div>

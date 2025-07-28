@@ -1,0 +1,81 @@
+<div [class]="getHeaderClasses()" [ngStyle]="getHeaderStyles()">
+    <nav class="nav">
+        <!-- Logo y marca con banner dinámico -->
+        <a routerLink="/" class="logo-container">
+            <div class="box">
+                <img src="assets/svg/logos/logo1.svg" alt="logo" class="logo" width="148" />
+                <!-- Banner dinámico personalizable -->
+                <div class="dynamic-banner" *ngIf="showPromotion">
+                    <span class="banner-text">{{ promotionText }}</span>
+                </div>
+            </div>
+        </a>
+
+        <!-- Navegación principal dinámica -->
+        <div class="d-flex align-center">
+            <!-- Enlaces de navegación generados dinámicamente -->
+            <ng-container *ngFor="let item of getNavigationItems()">
+                <a class="nav-btn letter-big d-none d-md-flex mr-2" [style.color]="headerConfig.textColor"
+                    [style.caret-color]="headerConfig.textColor" (click)="handleHeaderItemClick(item)"
+                    [class.cursor-pointer]="!item.route && !item.href">
+                    <span class="v-btn__overlay"></span>
+                    <span class="v-btn__underlay"></span>
+                    <span class="v-btn__content">{{ item.text }}</span>
+                </a>
+            </ng-container>
+
+            <!-- Icono de búsqueda simple -->
+            <button class="search-icon-btn mr-3" *ngIf="showSearch" type="button">
+                <mat-icon>search</mat-icon>
+            </button>
+
+            <!-- Selector de idioma -->
+            <div class="language-selector mr-3" *ngIf="showLanguageSelector">
+                <mat-select [(value)]="currentLanguage" (selectionChange)="onLanguageChange($event.value)"
+                    class="language-select">
+                    <mat-option value="es">🇪🇸 ES</mat-option>
+                    <mat-option value="en">🇺🇸 EN</mat-option>
+                </mat-select>
+            </div>
+
+            <!-- Menú de usuario -->
+            <button type="button" class="user-menu-btn" [matMenuTriggerFor]="userMenu"
+                [style.color]="headerConfig.textColor" [style.caret-color]="headerConfig.textColor">
+                <span class="v-btn__content">
+                    <div class="v-avatar">
+                        <mat-icon *ngIf="!userAvatar">account_circle</mat-icon>
+                        <img *ngIf="userAvatar" [src]="userAvatar" alt="avatar" class="avatar" width="40" />
+                    </div>
+                </span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Notificaciones dinámicas -->
+    <div class="notification-bar" *ngIf="showNotification" [ngClass]="notificationClass">
+        <span>{{ notificationText }}</span>
+        <button class="close-notification" (click)="closeNotification()">
+            <mat-icon>close</mat-icon>
+        </button>
+    </div>
+</div>
+
+<!-- Menú de usuario -->
+<mat-menu #userMenu="matMenu">
+    <p mat-menu-item (click)="login()" *ngIf="!isLoggedIn">
+        <mat-icon>login</mat-icon>
+        Login
+    </p>
+    <p mat-menu-item (click)="goToProfile()" *ngIf="isLoggedIn">
+        <mat-icon>person</mat-icon>
+        Perfil
+    </p>
+    <p mat-menu-item (click)="goToOrders()" *ngIf="isLoggedIn">
+        <mat-icon>shopping_bag</mat-icon>
+        Mis Pedidos
+    </p>
+    <p mat-menu-item (click)="logout()" *ngIf="isLoggedIn">
+        <mat-icon>logout</mat-icon>
+        Cerrar Sesión
+    </p>
+</mat-menu>

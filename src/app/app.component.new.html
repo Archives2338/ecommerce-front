@@ -1,0 +1,139 @@
+<!-- Header dinámico y customizable -->
+<app-header [headerConfig]="headerConfig" [userAvatar]="userAvatar" [isLoggedIn]="isLoggedIn" [showSearch]="true"
+    [showLanguageSelector]="true" [showPromotion]="showPromotion">
+</app-header>
+
+<!-- Contenido principal -->
+<main class="main-content">
+    <div class="hero-section">
+        <div class="container">
+            <h1>🎯 Streaming E-Commerce Avanzado</h1>
+            <p class="lead">Header dinámico con contenido del backend NestJS</p>
+
+            <!-- Panel de control para demostrar customización -->
+            <div class="control-panel">
+                <h3>🎛️ Panel de Control del Header</h3>
+
+                <div class="controls">
+                    <div class="control-group">
+                        <label>Color de fondo:</label>
+                        <input type="color" [(ngModel)]="headerConfig.backgroundColor" (change)="updateHeaderColors()">
+                    </div>
+
+                    <div class="control-group">
+                        <label>Color de texto:</label>
+                        <input type="color" [(ngModel)]="headerConfig.textColor">
+                    </div>
+
+                    <div class="control-group">
+                        <label>
+                            <input type="checkbox" [(ngModel)]="headerConfig.showSearch">
+                            Mostrar buscador
+                        </label>
+                    </div>
+
+                    <div class="control-group">
+                        <label>
+                            <input type="checkbox" [(ngModel)]="headerConfig.showLanguageSelector">
+                            Mostrar selector de idioma
+                        </label>
+                    </div>
+
+                    <div class="control-group">
+                        <label>
+                            <input type="checkbox" [(ngModel)]="showPromotion">
+                            Mostrar promoción
+                        </label>
+                    </div>
+
+                    <div class="control-group">
+                        <label>Texto de promoción:</label>
+                        <input type="text" [(ngModel)]="headerConfig.promotionText" placeholder="Texto de promoción">
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" (click)="simulateLogin()">
+                    {{ isLoggedIn ? 'Simular Logout' : 'Simular Login' }}
+                </button>
+
+                <button class="btn btn-secondary" (click)="showNotification()">
+                    Mostrar Notificación
+                </button>
+
+                <button class="btn btn-info" (click)="refreshContent()">
+                    🔄 Refrescar Contenido del Backend
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Información sobre las características -->
+    <div class="features-section">
+        <div class="container">
+            <h2>✨ Características del Header Mejorado</h2>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🌐</div>
+                    <h3>Contenido Dinámico</h3>
+                    <p>Textos del header se cargan desde el backend NestJS con soporte multiidioma</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🎨</div>
+                    <h3>Completamente Customizable</h3>
+                    <p>Colores, textos, enlaces y elementos pueden ser configurados dinámicamente</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🔍</div>
+                    <h3>Búsqueda Integrada</h3>
+                    <p>Buscador con placeholder dinámico y funcionalidad de búsqueda</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🌍</div>
+                    <h3>Multi-idioma</h3>
+                    <p>Cambio de idioma en tiempo real con actualización automática de contenido</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">📱</div>
+                    <h3>Responsive</h3>
+                    <p>Diseño adaptable para dispositivos móviles y desktop</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🔔</div>
+                    <h3>Notificaciones</h3>
+                    <p>Sistema de notificaciones dinámicas con diferentes tipos y estilos</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- API Backend Info -->
+    <div class="api-section">
+        <div class="container">
+            <h2>🔗 Conexión con Backend</h2>
+            <div class="api-info">
+                <div class="api-endpoint">
+                    <h4>Endpoint Principal:</h4>
+                    <code>POST http://localhost:3000/api/webpage/key</code>
+                </div>
+
+                <div class="api-payload">
+                    <h4>Payload de ejemplo:</h4>
+                    <pre>{{'{'}}"key": ["head1", "head2", "head3", "head4", "head5", "head6", "head7"],"language": "es"{{'}'}}</pre>
+                </div>
+
+                <div class="api-response">
+                    <h4>Respuesta esperada:</h4>
+                    <pre>{{ getApiExample() }}</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<router-outlet></router-outlet>

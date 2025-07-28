@@ -155,10 +155,74 @@
             </article>
         </div>
 
-        <!-- Loading state optimizado -->
-        <div class="loading-state" *ngIf="isLoadingProducts" role="status" aria-live="polite">
-            <div class="loading-spinner" aria-hidden="true"></div>
-            <p class="loading-text">Cargando servicios de streaming...</p>
+        <!-- Skeleton loading state -->
+        <div class="skeleton-container" *ngIf="isLoadingProducts">
+            <article class="product-card skeleton-card" *ngFor="let skeleton of [1,2,3,4]; let i = index">
+                <!-- Skeleton Card Header -->
+                <header class="card-header skeleton-header">
+                    <!-- Skeleton Service Logo -->
+                    <figure class="service-logo skeleton-logo">
+                        <div class="skeleton-shimmer skeleton-logo-placeholder"></div>
+                    </figure>
+
+                    <!-- Background decorativo (mismo que el original) -->
+                    <img class="card-background" src="assets/svg/e-commerce/card.svg" alt="Card background"
+                        role="presentation" />
+
+                    <!-- Skeleton Card Info -->
+                    <div class="card-info">
+                        <div class="user-activity">
+                            <!-- Skeleton Swiper de usuarios -->
+                            <div class="users-showcase">
+                                <div class="category-showcase">
+                                    <!-- Skeleton avatares -->
+                                    <div class="skeleton-avatar-group">
+                                        <div class="skeleton-avatar skeleton-shimmer" *ngFor="let j of [1,2,3,4]"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Skeleton botón plus -->
+                                <div class="skeleton-plus-btn skeleton-shimmer"></div>
+                            </div>
+
+                            <!-- Skeleton texto de actividad -->
+                            <div class="category-tips">
+                                <div class="skeleton-shimmer skeleton-activity-text"></div>
+                            </div>
+                        </div>
+
+                        <!-- Skeleton Pricing -->
+                        <div class="pricing">
+                            <div class="skeleton-shimmer skeleton-price"></div>
+                            <div class="skeleton-shimmer skeleton-period"></div>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- Skeleton Category Bottom -->
+                <section class="category-bottom">
+                    <div class="features-container">
+                        <!-- Skeleton lista de características -->
+                        <ul class="part" role="list">
+                            <li *ngFor="let feature of [1,2,3]">
+                                <div class="skeleton-shimmer skeleton-check-icon"></div>
+                                <div class="skeleton-shimmer skeleton-feature-text"></div>
+                            </li>
+                        </ul>
+
+                        <!-- Skeleton view more -->
+                        <div class="view-more-box skeleton-view-more">
+                            <div class="skeleton-shimmer skeleton-arrow"></div>
+                        </div>
+                    </div>
+
+                    <!-- Skeleton botón comprar -->
+                    <div class="skeleton-shimmer skeleton-buy-btn"></div>
+
+                    <!-- Skeleton link detalles -->
+                    <div class="skeleton-shimmer skeleton-details-link"></div>
+                </section>
+            </article>
         </div>
 
         <!-- Empty state optimizado -->

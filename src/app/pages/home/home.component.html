@@ -1,6 +1,6 @@
 <div class="body" *ngIf="!isLoading">
     <div class="signboard-wrapper-box">
-        <h2>{{ homeContent?.home1 || 'Comparta la suscripción premium más barato en StreamingCommerce' }}</h2>
+        <h2>{{ homeContent?.home1 || '' }}</h2>
         <h3 *ngIf="homeContent?.['home35']">{{ homeContent?.['home35'] }}</h3>
 
         <!-- Poster solo se muestra si hay datos reales incluyendo home2 -->
@@ -22,7 +22,7 @@
                 <p class="users title">
                     <span>{{ homeContent?.home5 }}</span> +
                 </p>
-                <p class="desc">{{ homeContent?.home6 || 'Participaciones' }}</p>
+                <p class="desc">{{ homeContent?.home6 || '' }}</p>
             </div>
         </div>
     </div>
@@ -45,7 +45,8 @@
             <article class="product-card" *ngFor="let product of streamingProducts; let i = index"
                 [attr.data-index]="i">
                 <!-- Card Header con imagen del servicio -->
-                <header class="card-header">
+                <header class="card-header" (click)="openServiceModal(product.id)" [style.cursor]="'pointer'"
+                    [attr.aria-label]="'Ver detalles de ' + product.type_name">
                     <figure class="service-logo">
                         <img [src]="product.image" [alt]="product.type_name"
                             (error)="onImageError($event, 'assets/img/services/default.webp')" loading="lazy">
@@ -99,7 +100,8 @@
                                 </ng-template>
 
                                 <button class="add-user-btn buttom" type="button" aria-label="Unirse al grupo"
-                                    title="Unirse al grupo">
+                                    title="Unirse al grupo"
+                                    (click)="openServiceModal(product.id); $event.stopPropagation()">
                                     <img src="https://static.gamsgocdn.com/gg2/images/index/plus.webp" alt="Icono más"
                                         loading="lazy" />
                                 </button>
@@ -123,7 +125,7 @@
                 </header>
 
                 <!-- Category Bottom con descripción y acciones -->
-                <section class="category-bottom">
+                <section class="category-bottom" (click)="$event.stopPropagation()">
                     <div class="features-container">
                         <ul class="part" role="list">
                             <li *ngFor="let description of product.description; let descIndex = index"
@@ -134,7 +136,7 @@
                         </ul>
 
                         <div class="view-more-box" *ngIf="product.description && product.description.length > 3"
-                            (click)="toggleProductDetails(i)">
+                            (click)="toggleProductDetails(i); $event.stopPropagation()">
                             <div class="view-arrow" [style.opacity]="isProductExpanded(i) ? 0.5 : 1"
                                 [class.expanded]="isProductExpanded(i)"></div>
                             <div class="view-arrow" [style.opacity]="isProductExpanded(i) ? 1 : 0.5"
@@ -142,13 +144,14 @@
                         </div>
                     </div>
 
-                    <button type="button" class="category-btn letter-big" (click)="onBuyProduct(product)"
+                    <button type="button" class="category-btn letter-big"
+                        (click)="openServiceModal(product.id); $event.stopPropagation()"
                         [attr.aria-label]="'Comprar ' + product.type_name">
                         <span class="v-btn__content">COMPRAR AHORA</span>
                     </button>
 
                     <a class="details-link" [routerLink]="['/service', product.detail_route]"
-                        [attr.aria-label]="'Ver detalles de ' + product.type_name">
+                        [attr.aria-label]="'Ver detalles de ' + product.type_name" (click)="$event.stopPropagation()">
                         Revisar detalles
                     </a>
                 </section>
@@ -234,7 +237,7 @@
 
     <div class="why-wrapper-box">
         <h3>
-            {{ homeContent?.['home11'] || '¿Por qué más y más personas usan StreamingCommerce?' }}
+            {{ homeContent?.['home11'] || '' }}
         </h3>
         <ul class="why-box">
             <li>
@@ -329,4 +332,122 @@
 <div *ngIf="isLoading" class="loading-container">
     <div class="loading-spinner"></div>
     <p>Cargando contenido del home...</p>
+</div>
+
+<!-- Modal para detalles del servicio -->
+<div class="modal-overlay" *ngIf="showServiceModal" (click)="closeModal($event)">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+        <!-- SKU Header -->
+        <div class="sku-header" *ngIf="modalData?.data">
+            <img class="sku-header-thumb" [src]="modalData?.data?.thumb_img" [alt]="modalData?.data?.type_name">
+            <div class="sku-header-info">
+                <div>
+                    <div class="sku-header-price" *ngIf="getHeaderPlan() as headerPlan">
+                        <span>
+                            <span class="gg-pr-2">
+                                <span class="currency-icon">{{ headerPlan.currency_icon1 }}</span>
+                            </span>{{ headerPlan.sale_price }}
+                        </span>
+                    </div>
+                    <p class="average_price" *ngIf="getHeaderPlan() as headerPlan">
+                        <span>
+                            <span class="gg-pr-2">{{ headerPlan.currency_icon1 }}</span>{{ headerPlan.average_price }}
+                        </span>/mes
+                    </p>
+                </div>
+                <p class="desc" *ngIf="getHeaderPlan() as headerPlan">
+                    <span>Precio de renovación</span>&nbsp;
+                    <span class="original-price">
+                        <span class="gg-pr-2">{{ headerPlan.currency_icon1 }}</span>{{ headerPlan.original_price }}
+                    </span>
+                    <span>/{{ headerPlan.month_content }}</span>
+                </p>
+            </div>
+            <div class="iconfont icon-close" (click)="closeModal()"
+                style="font-size: 22px; color: rgb(187, 187, 187); cursor: pointer;">×</div>
+        </div>
+
+        <!-- Loading state para el modal -->
+        <div *ngIf="isLoadingModalData" class="modal-loading">
+            <div class="loading-spinner"></div>
+            <p>Cargando detalles...</p>
+        </div>
+
+        <!-- SKU Content (dinámico) -->
+        <div *ngIf="!isLoadingModalData && modalData?.data" class="sku-content">
+            <div class="header-line"></div>
+            <div>
+                <h4>Renovación automática Opciones</h4>
+                <div class="v-btn-group v-theme--light v-btn-group--density-default v-btn-toggle btn-group">
+                    <!-- Opciones de meses dinámicas -->
+                    <div *ngFor="let monthOption of getAvailableMonths()" class="cursor-pointer deduction-box"
+                        [class.subscribe-active]="isMonthSelected(monthOption.month_id)" style="opacity: 1;"
+                        (click)="onMonthSelect(monthOption.month_id)">
+                        <button type="button"
+                            class="v-btn v-btn--flat v-theme--light v-btn--density-default v-btn--size-default v-btn--variant-plain"
+                            [class.v-btn--active]="isMonthSelected(monthOption.month_id)" [value]="monthOption.month_id"
+                            style="height: auto;">
+                            <span class="v-btn__overlay"></span>
+                            <span class="v-btn__underlay"></span>
+                            <span class="v-btn__content">{{ monthOption.month_content }}</span>
+                        </button>
+                        <div class="subscribe">Suscribir</div>
+                    </div>
+                </div>
+
+                <h4>{{ modalData?.data?.selectInfo || 'Seleccionar tipo' }}</h4>
+                <div class="v-btn-group v-theme--light v-btn-group--density-default v-btn-toggle btn-group">
+                    <!-- Opciones de pantalla dinámicas -->
+                    <button *ngFor="let screenOption of getAvailableScreens()" type="button"
+                        class="v-btn v-btn--flat v-theme--light v-btn--density-default v-btn--size-default v-btn--variant-plain"
+                        [class.v-btn--active]="isScreenSelected(screenOption.screen_id)"
+                        [value]="screenOption.screen_id" style="height: auto; opacity: 1;"
+                        (click)="onScreenSelect(screenOption.screen_id)">
+                        <span class="v-btn__overlay"></span>
+                        <span class="v-btn__underlay"></span>
+                        <span class="v-btn__content">
+                            {{ screenOption.screen_content }}&nbsp;
+                            <span class="tips">({{ screenOption.seat_type }})</span>
+                        </span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="footer-line"></div>
+        </div>
+
+        <!-- Botones de pago -->
+        <div class="pay-btn w-100" *ngIf="!isLoadingModalData && modalData?.data">
+            <button type="button"
+                class="v-btn v-btn--density-default v-btn--rounded v-btn--size-default v-btn--variant-text mr-4 flex-1"
+                (click)="closeModal()">
+                <span class="v-btn__overlay"></span>
+                <span class="v-btn__underlay"></span>
+                <span class="v-btn__content">Cancelar</span>
+            </button>
+            <button type="button"
+                class="v-btn v-btn--density-default v-btn--rounded v-btn--size-default v-btn--variant-text payment flex-1"
+                (click)="onPayNow()" [disabled]="!currentSelectedPlan"
+                style="color: rgb(255, 255, 255); caret-color: rgb(255, 255, 255);">
+                <span class="v-btn__overlay"></span>
+                <span class="v-btn__underlay"></span>
+                <span class="v-btn__content">Pagar ahora</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast de error -->
+<div class="error-toast" *ngIf="showErrorToast" [@slideIn]>
+    <div class="toast-content">
+        <div class="toast-icon">
+            <span class="iconfont icon-warning"></span>
+        </div>
+        <div class="toast-message">
+            {{ errorToastMessage }}
+        </div>
+        <button class="toast-close" (click)="showErrorToast = false" aria-label="Cerrar notificación">
+            ×
+        </button>
+    </div>
 </div>

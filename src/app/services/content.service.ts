@@ -3,6 +3,9 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
+import { ApiService } from './api.service';
+import { LoggerService } from './logger.service';
+import { environment } from '../../environments/environment';
 
 export interface HeaderContent {
   head1?: string;
@@ -121,24 +124,30 @@ export interface WebpageContentResponse {
   providedIn: 'root'
 })
 export class ContentService {
-  private baseUrl = 'http://localhost:3000/api'; // URL del backend NestJS
   private contentCache = new BehaviorSubject<any>({});
   
   // Observable para que los componentes puedan suscribirse a cambios
   public content$ = this.contentCache.asObservable();
 
-  // Headers para CORS
-  private getHttpOptions() {
-    return {
-      headers: new HttpHeaders({
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      }),
-      withCredentials: false
-    };
+  constructor(
+    private http: HttpClient,
+    private apiService: ApiService,
+    private logger: LoggerService
+  ) {
+    this.logger.info('ContentService initialized', {}, 'CONTENT_SERVICE');
   }
 
-  constructor(private http: HttpClient) {}
+  /**
+   * Headers compatibles con CORS
+   */
+  private getCorsCompatibleHeaders() {
+    return {
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      }
+    };
+  }
 
   /**
    * Configuración por defecto para elementos del header
@@ -162,10 +171,13 @@ export class ContentService {
    * Obtiene contenido del home desde el backend
    */
   getHomeContent(language: string = 'es'): Observable<HomeContent> {
-    return this.http.post<WebpageContentResponse>(`${this.baseUrl}/webpage/key`, {
+    this.logger.debug('Getting home content', { language }, 'CONTENT_SERVICE');
+
+    // Usar HttpClient directo temporalmente para evitar CORS
+    return this.http.post<WebpageContentResponse>('http://localhost:3000/api/webpage/key', {
       key: ['home'],
       language: language
-    }, this.getHttpOptions()).pipe(
+    }, this.getCorsCompatibleHeaders()).pipe(
       map(response => {
         if (response.code === 0 && response.data?.home) {
           const homeData = response.data.home as HomeContent;
@@ -190,12 +202,13 @@ export class ContentService {
             home: homeData
           });
           
+          this.logger.debug('Home content loaded successfully', homeData, 'CONTENT_SERVICE');
           return homeData;
         }
         throw new Error(response.message || 'Error al obtener contenido del home');
       }),
       catchError(error => {
-        console.error('Error al cargar contenido del home:', error);
+        this.logger.error('Error loading home content', error, 'CONTENT_SERVICE');
         // Fallback con contenido por defecto
         return of({
           home1: 'Proporcionando streaming asequible y de alta calidad durante 6 años',
@@ -243,10 +256,12 @@ export class ContentService {
    * @param sections - Secciones a obtener (ej: ['head', 'home', 'auth'])
    */
   getHeaderContent(language: string = 'es', sections: string[] = ['head']): Observable<any> {
-    return this.http.post<WebpageContentResponse>(`${this.baseUrl}/webpage/key`, {
+    this.logger.debug('Getting header content', { language, sections }, 'CONTENT_SERVICE');
+
+    return this.http.post<WebpageContentResponse>('http://localhost:3000/api/webpage/key', {
       key: sections,
       language: language
-    }, this.getHttpOptions()).pipe(
+    }, this.getCorsCompatibleHeaders()).pipe(
       map(response => {
         if (response.code === 0 && response.data?.head) {
           // Procesar parámetros dinámicos si existen
@@ -280,12 +295,13 @@ export class ContentService {
             ...response.data // Incluir todas las secciones (head, home, auth, etc.)
           });
           
+          this.logger.debug('Header content loaded successfully', filteredHeaderData, 'CONTENT_SERVICE');
           return filteredHeaderData;
         }
         throw new Error(response.message || 'Error al obtener contenido del header');
       }),
       catchError(error => {
-        console.error('Error CORS o de conexión:', error);
+        this.logger.error('Error loading header content', error, 'CONTENT_SERVICE');
         // Devolver contenido por defecto en caso de error
         return of({
           head1: 'PÁGINA DE INICIO',
@@ -306,10 +322,12 @@ export class ContentService {
    * @param sections - Secciones a obtener (ej: ['head', 'home', 'auth'])
    */
   getContent(language: string = 'es', sections: string[]): Observable<any> {
-    return this.http.post<WebpageContentResponse>(`${this.baseUrl}/webpage/key`, {
+    this.logger.debug('Getting content', { language, sections }, 'CONTENT_SERVICE');
+
+    return this.http.post<WebpageContentResponse>('http://localhost:3000/api/webpage/key', {
       key: sections,
       language: language
-    }, this.getHttpOptions()).pipe(
+    }, this.getCorsCompatibleHeaders()).pipe(
       map(response => {
         if (response.code === 0) {
           // Actualizar cache con todas las secciones
@@ -318,12 +336,14 @@ export class ContentService {
             ...currentContent,
             ...response.data
           });
+
+          this.logger.debug('Content loaded successfully', response.data, 'CONTENT_SERVICE');
           return response.data;
         }
         throw new Error(response.message || 'Error al obtener contenido');
       }),
       catchError(error => {
-        console.error('Error al obtener contenido:', error);
+        this.logger.error('Error getting content', error, 'CONTENT_SERVICE');
         return of({});
       })
     );
@@ -350,13 +370,17 @@ export class ContentService {
 
   /**
    * Obtiene todo el contenido de la página principal en una sola petición (head + home)
+  /**
+   * Obtiene contenido de la página principal (head + home)
    * @param language - Idioma del contenido
    */
   getMainPageContent(language: string = 'es'): Observable<{head: HeaderContent, home: HomeContent}> {
-    return this.http.post<WebpageContentResponse>(`${this.baseUrl}/webpage/key`, {
+    this.logger.debug('Getting main page content', { language }, 'CONTENT_SERVICE');
+
+    return this.http.post<WebpageContentResponse>('http://localhost:3000/api/webpage/key', {
       key: ['head', 'home'],
       language: language
-    }, this.getHttpOptions()).pipe(
+    }, this.getCorsCompatibleHeaders()).pipe(
       map(response => {
         if (response.code === 0 && response.data) {
           // Procesar el contenido del header
@@ -405,12 +429,13 @@ export class ContentService {
             home: homeData
           });
           
+          this.logger.debug('Main page content loaded successfully', { head: headerData, home: homeData }, 'CONTENT_SERVICE');
           return { head: headerData, home: homeData };
         }
         throw new Error(response.message || 'Error al obtener contenido de la página principal');
       }),
       catchError(error => {
-        console.error('Error al cargar contenido de la página principal:', error);
+        this.logger.error('Error loading main page content', error, 'CONTENT_SERVICE');
         // Fallback con contenido por defecto
         const fallbackHeader: HeaderContent = {
           head1: 'PÁGINA DE INICIO',
@@ -467,19 +492,21 @@ export class ContentService {
    * @param promote - Promoción específica (null por defecto)
    */
   getStreamingProducts(language: string = 'es', promote: any = null): Observable<ProductsResponse> {
+    this.logger.debug('Getting streaming products', { language, promote }, 'CONTENT_SERVICE');
+
     return this.http.post<ProductsResponse>('http://localhost:3000/index/getTypeClassifyList', {
       language: language,
       promote: promote
-    }, this.getHttpOptions()).pipe(
+    }, this.getCorsCompatibleHeaders()).pipe(
       map(response => {
         if (response.code === 0 && response.data) {
-          console.log('Productos de streaming cargados:', response.data);
+          this.logger.debug('Streaming products loaded successfully', response.data, 'CONTENT_SERVICE');
           return response;
         }
         throw new Error(response.message || 'Error al obtener productos de streaming');
       }),
       catchError(error => {
-        console.error('Error al cargar productos de streaming:', error);
+        this.logger.error('Error loading streaming products', error, 'CONTENT_SERVICE');
         // Fallback con datos de ejemplo
         const fallbackData: ProductsResponse = {
           code: 0,

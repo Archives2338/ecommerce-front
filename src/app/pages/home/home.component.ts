@@ -2,9 +2,14 @@ import { Component, Input, OnInit, OnDestroy, CUSTOM_ELEMENTS_SCHEMA, AfterViewI
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
+import { HttpClient } from '@angular/common/http';
 import { Subject, interval } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { trigger, state, style, transition, animate } from '@angular/animations';
 import { ContentService, HomeContent, StreamingProduct, ProductCategory } from '../../services/content.service';
+import { SkuResponse, SkuData, SkuPlan } from '../../interfaces/sku-response.interface';
+import { ApiService } from '../../services/api.service';
+import { SkuService } from '../../services/sku.service';
 import { register } from 'swiper/element/bundle';
 
 // Registrar Swiper como Web Component
@@ -16,7 +21,18 @@ register();
   imports: [CommonModule, RouterModule, MatIconModule],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './home.component.html',
-  styleUrl: './home.component.scss'
+  styleUrl: './home.component.scss',
+  animations: [
+    trigger('slideIn', [
+      transition(':enter', [
+        style({ transform: 'translateY(-100%)', opacity: 0 }),
+        animate('300ms ease-in', style({ transform: 'translateY(0)', opacity: 1 }))
+      ]),
+      transition(':leave', [
+        animate('300ms ease-out', style({ transform: 'translateY(-100%)', opacity: 0 }))
+      ])
+    ])
+  ]
 })
 export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
   private destroy$ = new Subject<void>();
@@ -36,6 +52,23 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
   isLoading: boolean = true;
   isLoadingProducts: boolean = true;
 
+  // ===== PROPIEDADES DEL MODAL =====
+  showServiceModal: boolean = false;
+  isLoadingModalData: boolean = false;
+  modalData: SkuResponse | null = null;
+  selectedProductId: number | null = null;
+  modalError: string | null = null;
+  
+  // ===== PROPIEDADES DE NOTIFICACIONES =====
+  showErrorToast: boolean = false;
+  errorToastMessage: string = '';
+  
+  // ===== PROPIEDADES DE SELECCIÓN DEL SKU =====
+  selectedMonthId: number | null = null;
+  selectedScreenId: number | null = null;
+  currentSelectedPlan: SkuPlan | null = null;
+  isAutoRenewEnabled: boolean = true;
+
   // ===== PROPIEDADES DEL SWIPER =====
   currentOrderIndexes: { [productIndex: number]: number } = {};
   swiperIntervals: { [productIndex: number]: any } = {};
@@ -44,7 +77,12 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
   // ===== PROPIEDADES DE EXPANSIÓN =====
   expandedProducts: { [productIndex: number]: boolean } = {};
 
-  constructor(private contentService: ContentService) {}
+  constructor(
+    private contentService: ContentService,
+    private http: HttpClient,
+    private apiService: ApiService,
+    private skuService: SkuService
+  ) {}
 
   ngOnInit(): void {
     // Si hay contenido precargado, usarlo
@@ -365,5 +403,270 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
     } else {
       return `${timeNum} días`;
     }
+  }
+
+  // ===== MÉTODOS DEL MODAL =====
+  
+  /**
+   * Abre el modal del servicio y hace la petición a la API
+   */
+  openServiceModal(productId: number): void {
+    console.log('Abriendo modal para producto ID:', productId);
+    
+    this.selectedProductId = productId;
+    this.showServiceModal = true;
+    this.isLoadingModalData = true;
+    this.modalData = null;
+    this.modalError = null;
+    
+    // Usar el nuevo SkuService
+    this.skuService.getInitialSku(productId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          console.log('Respuesta de la API:', response);
+          
+          // Verificar si la respuesta indica error
+          if (response.code !== 0 || !response.data) {
+            this.modalError = response.message || 'Error al cargar los detalles del servicio';
+            this.showServiceModal = false; // Cerrar el modal inmediatamente
+            this.isLoadingModalData = false;
+            
+            // Mostrar mensaje de error temporal (opcional)
+            this.showTemporaryErrorMessage(this.modalError);
+            return;
+          }
+          
+          this.modalData = response;
+          
+          // Establecer valores por defecto basados en la respuesta
+          if (response.data) {
+            this.selectedMonthId = response.data.plan.default_month_id;
+            this.selectedScreenId = response.data.plan.default_screen_id;
+            this.updateSelectedPlan();
+          }
+          
+          this.isLoadingModalData = false;
+        },
+        error: (error) => {
+          console.error('Error en la petición:', error);
+          this.modalError = 'Error de conexión. Intente nuevamente.';
+          this.showServiceModal = false; // Cerrar el modal inmediatamente
+          this.modalData = null;
+          this.isLoadingModalData = false;
+          
+          // Mostrar mensaje de error temporal
+          this.showTemporaryErrorMessage(this.modalError);
+        }
+      });
+  }
+  
+  /**
+   * Cierra el modal
+   */
+  closeModal(event?: Event): void {
+    if (event) {
+      // Si se hizo click en el overlay, cerrar el modal
+      if ((event.target as HTMLElement).classList.contains('modal-overlay')) {
+        this.showServiceModal = false;
+        this.resetModalData();
+      }
+    } else {
+      // Cerrar modal desde el botón de cerrar
+      this.showServiceModal = false;
+      this.resetModalData();
+    }
+  }
+  
+  /**
+   * Resetea los datos del modal
+   */
+  private resetModalData(): void {
+    this.selectedProductId = null;
+    this.modalData = null;
+    this.isLoadingModalData = false;
+    this.selectedMonthId = null;
+    this.selectedScreenId = null;
+    this.currentSelectedPlan = null;
+    this.modalError = null;
+    this.isAutoRenewEnabled = true;
+  }
+
+  // ===== MÉTODOS DE MANEJO DEL SKU =====
+
+  /**
+   * Actualiza el plan seleccionado basado en las selecciones actuales
+   */
+  updateSelectedPlan(): void {
+    if (!this.modalData?.data || !this.selectedMonthId || !this.selectedScreenId) {
+      return;
+    }
+
+    // Buscar el plan en base a las selecciones
+    const selectedMonth = this.modalData.data.plan.month.find(m => m.month_id === this.selectedMonthId);
+    if (selectedMonth) {
+      this.currentSelectedPlan = selectedMonth.screen.find(s => s.screen_id === this.selectedScreenId) || null;
+    }
+
+    console.log('Plan seleccionado actualizado:', this.currentSelectedPlan);
+  }
+
+  /**
+   * Maneja la selección de un período de tiempo (mes)
+   */
+  onMonthSelect(monthId: number): void {
+    if (this.selectedMonthId === monthId) return;
+    
+    console.log('Seleccionando mes:', monthId);
+    this.selectedMonthId = monthId;
+    this.updateSelectedPlan();
+    
+    // Recargar datos si es necesario (en caso de que el backend requiera nueva consulta)
+    this.reloadSkuData();
+  }
+
+  /**
+   * Maneja la selección de tipo de pantalla (screen)
+   */
+  onScreenSelect(screenId: number): void {
+    if (this.selectedScreenId === screenId) return;
+    
+    console.log('Seleccionando screen:', screenId);
+    this.selectedScreenId = screenId;
+    this.updateSelectedPlan();
+    
+    // Recargar datos si es necesario
+    this.reloadSkuData();
+  }
+
+  /**
+   * Recarga los datos del SKU cuando cambian las selecciones
+   */
+  private reloadSkuData(): void {
+    if (!this.selectedProductId || !this.selectedMonthId || !this.selectedScreenId) return;
+
+    this.isLoadingModalData = true;
+    
+    // Usar el nuevo SkuService con selecciones específicas
+    this.skuService.getSkuWithSelection(
+      this.selectedProductId,
+      this.selectedMonthId,
+      this.selectedScreenId
+    )
+    .pipe(takeUntil(this.destroy$))
+    .subscribe({
+      next: (response) => {
+        console.log('Datos recargados:', response);
+        this.modalData = response;
+        this.updateSelectedPlan();
+        this.isLoadingModalData = false;
+      },
+      error: (error) => {
+        console.error('Error recargando datos:', error);
+        this.isLoadingModalData = false;
+      }
+    });
+  }
+
+  /**
+   * Toggle del checkbox de renovación automática
+   */
+  toggleAutoRenew(): void {
+    this.isAutoRenewEnabled = !this.isAutoRenewEnabled;
+    console.log('Auto renovación:', this.isAutoRenewEnabled);
+  }
+
+  /**
+   * Obtiene los meses disponibles
+   */
+  getAvailableMonths() {
+    return this.modalData?.data?.plan?.month || [];
+  }
+
+  /**
+   * Obtiene las opciones de pantalla disponibles
+   */
+  getAvailableScreens() {
+    return this.modalData?.data?.plan?.screen || [];
+  }
+
+  /**
+   * Verifica si un mes está seleccionado
+   */
+  isMonthSelected(monthId: number): boolean {
+    return this.selectedMonthId === monthId;
+  }
+
+  /**
+   * Verifica si una pantalla está seleccionada
+   */
+  isScreenSelected(screenId: number): boolean {
+    return this.selectedScreenId === screenId;
+  }
+
+  /**
+   * Obtiene el plan para el header del modal
+   */
+  getHeaderPlan(): SkuPlan | null {
+    if (!this.modalData?.data) return null;
+    
+    // Usar el plan de repayment para el header si está disponible
+    const repaymentData = this.modalData.data.repayment;
+    if (repaymentData?.month?.length > 0) {
+      const month = repaymentData.month.find(m => m.month_id === this.selectedMonthId) || repaymentData.month[0];
+      return month.screen.find(s => s.screen_id === this.selectedScreenId) || month.screen[0];
+    }
+    
+    return this.currentSelectedPlan;
+  }
+
+  /**
+   * Formatea precio con símbolo de moneda
+   */
+  formatPrice(price: string, currencyIcon: string): string {
+    return `${currencyIcon}${price}`;
+  }
+
+  /**
+   * Maneja el click en "Pagar ahora"
+   */
+  onPayNow(): void {
+    if (!this.currentSelectedPlan) {
+      console.warn('No hay plan seleccionado');
+      return;
+    }
+
+    console.log('Procesando pago:', {
+      productId: this.selectedProductId,
+      plan: this.currentSelectedPlan,
+      autoRenew: this.isAutoRenewEnabled,
+      monthId: this.selectedMonthId,
+      screenId: this.selectedScreenId
+    });
+
+    // Aquí implementarías la lógica de pago
+    // Por ejemplo, redirigir a una página de checkout o abrir un modal de pago
+    
+    // Ejemplo de lo que podrías hacer:
+    // this.router.navigate(['/checkout'], {
+    //   queryParams: {
+    //     planId: this.currentSelectedPlan.type_plan_id,
+    //     autoRenew: this.isAutoRenewEnabled
+    //   }
+    // });
+  }
+
+  /**
+   * Muestra un mensaje de error temporal
+   */
+  showTemporaryErrorMessage(message: string): void {
+    this.errorToastMessage = message;
+    this.showErrorToast = true;
+    
+    // Ocultar el mensaje después de 3 segundos
+    setTimeout(() => {
+      this.showErrorToast = false;
+      this.errorToastMessage = '';
+    }, 3000);
   }
 }

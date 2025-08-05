@@ -53,6 +53,7 @@ export interface SkuData {
   sku_style_status: boolean;
   plan: PlanData;
   repayment: PlanData;
+  _id: string;
 }
 
 export interface SkuResponse {

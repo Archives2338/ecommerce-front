@@ -1,0 +1,89 @@
+<div data-v-bdfc722c="" class="ticket-wrapper-box">
+    <div data-v-bdfc722c="" class="ticket-box">
+        <div data-v-bdfc722c="" class="channel">
+            <div data-v-bdfc722c="" class="tab-box"><b data-v-bdfc722c="" class="active">Suscripción</b><a
+                    data-v-bdfc722c="" href="/order" class="">Pedidos históricos</a></div>
+            <div data-v-bdfc722c="" class="search-btn">
+                <div data-v-bdfc722c="" class="iconfont icon-search"></div> Buscar
+            </div>
+            <!-- Botón temporal para probar el toggle -->
+            <button (click)="toggleSubscriptions()"
+                style="margin-left: 10px; padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px;">
+                {{ hasSubscriptions ? 'Ocultar Suscripciones' : 'Mostrar Suscripciones' }}
+            </button>
+        </div><!---->
+        <div data-v-5741bedf="" data-v-bdfc722c="" id="macy" style="position: relative;">
+            <!-- Mostrar cards cuando hay suscripciones -->
+            <div *ngIf="hasSubscriptions" class="subscriptions-container">
+                <app-subscription-card *ngFor="let subscription of mockSubscriptions" [card]="subscription"
+                    [tiempoRestante]="tiempoRestante">
+                </app-subscription-card>
+            </div>
+        </div>
+        <!-- Mostrar mensaje cuando no hay suscripciones -->
+        <div *ngIf="!hasSubscriptions" data-v-c0515d83="" data-v-bdfc722c="" class="result-box"><img data-v-c0515d83=""
+                src="https://static.gamsgocdn.com/gg2_new/images/order/no-result.webp">
+            <h4 data-v-c0515d83="">No hay información de suscripción disponible</h4>
+            <p data-v-c0515d83="">Puedes ir y ver lo que quieres comprar.</p><a data-v-c0515d83=""
+                class="v-btn v-theme--light v-btn--density-default v-btn--rounded v-btn--size-default v-btn--variant-text button"
+                href="/es" style="color: rgb(255, 255, 255); caret-color: rgb(255, 255, 255);"><span
+                    class="v-btn__overlay"></span><span class="v-btn__underlay"></span><!----><span
+                    class="v-btn__content" data-no-activator="">ir a comprar</span><!----><!----></a>
+        </div><br data-v-bdfc722c="">
+        <div data-v-55b75110="" data-v-bdfc722c="" class="swiper-banner-box">
+            <div data-v-a4f9d9d3="" data-v-55b75110="" class="swiper-button-prev swiper-button-lock">
+                <div data-v-a4f9d9d3="" class="arrow-button"
+                    style="width: 40px; height: 40px; border-radius: 40px; visibility: hidden;"><svg data-v-a4f9d9d3=""
+                        xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none"
+                        version="1.1" width="7.63720703125" height="11.87939453125"
+                        viewBox="0 0 7.63720703125 11.87939453125">
+                        <g transform="matrix(-1,0,0,1,15.2744140625,0)" data-v-a4f9d9d3="">
+                            <g transform="matrix(-0.7071067690849304,0.7071067690849304,-0.7071067690849304,-0.7071067690849304,30.27424726555526,-0.6607065449360618)"
+                                data-v-a4f9d9d3="">
+                                <rect x="15.273960590362549" y="5.939648628234863" width="8.40000057220459"
+                                    height="2.4000000953674316" rx="1.2000000476837158" fill="#262743" fill-opacity="1"
+                                    data-v-a4f9d9d3=""></rect>
+                            </g>
+                            <g transform="matrix(0.7071068286895752,0.7071067690849304,-0.7071067690849304,0.7071068286895752,2.7340032987995073,-6.600468801072566)"
+                                data-v-a4f9d9d3="">
+                                <rect x="9.33447265625" y="0" width="8.400001525878906" height="2.4000003337860107"
+                                    rx="1.2000001668930054" fill="#262743" fill-opacity="1" data-v-a4f9d9d3=""></rect>
+                            </g>
+                        </g>
+                    </svg></div><!----><!----><!---->
+            </div>
+            <div data-v-55b75110="" class="swiper swiper-initialized swiper-horizontal mySwiper">
+                <div class="swiper-wrapper">
+
+                </div><!----><!---->
+                <div class="swiper-pagination swiper-pagination-clickable swiper-pagination-bullets swiper-pagination-horizontal swiper-pagination-bullets-dynamic swiper-pagination-lock"
+                    style="width: 30px;"><span
+                        class="swiper-pagination-bullet swiper-pagination-bullet-active swiper-pagination-bullet-active-main"
+                        style="left: 0px;"></span></div>
+            </div>
+            <div data-v-a4f9d9d3="" data-v-55b75110="" class="swiper-button-next swiper-button-lock"><!---->
+                <div data-v-a4f9d9d3="" class="arrow-button"
+                    style="width: 40px; height: 40px; border-radius: 40px; visibility: hidden;"><svg data-v-a4f9d9d3=""
+                        xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none"
+                        version="1.1" width="7.63720703125" height="11.87939453125"
+                        viewBox="0 0 7.63720703125 11.87939453125">
+                        <g data-v-a4f9d9d3="">
+                            <g data-v-a4f9d9d3=""
+                                transform="matrix(-0.7071067690849304,0.7071067690849304,-0.7071067690849304,-0.7071067690849304,17.23671944560536,4.739614243763839)">
+                                <rect data-v-a4f9d9d3="" x="7.636753559112549" y="5.939648628234863"
+                                    width="8.40000057220459" height="2.4000000953674316" rx="1.2000000476837158"
+                                    fill="#262743" fill-opacity="1"></rect>
+                            </g>
+                            <g data-v-a4f9d9d3=""
+                                transform="matrix(0.7071068286895752,0.7071067690849304,-0.7071067690849304,0.7071068286895752,0.4971175114624202,-1.200148012372665)">
+                                <rect data-v-a4f9d9d3="" x="1.697265625" y="0" width="8.40000057220459"
+                                    height="2.4000003337860107" rx="1.2000001668930054" fill="#262743" fill-opacity="1">
+                                </rect>
+                            </g>
+                        </g>
+                    </svg></div><!----><!---->
+            </div>
+        </div>
+        <!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----><!---->
+    </div>
+</div>

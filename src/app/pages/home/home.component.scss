@@ -989,7 +989,9 @@
 .sku-header .sku-header-info .original-price {
   color: rgb(163, 162, 162);
 }
-
+.text-decoration-line-through {
+  text-decoration: line-through!important;
+}
 .gg-pr-2 {
   padding-right: 2px;
 }
@@ -1047,6 +1049,73 @@
     line-height: 1.4;
     color: #374151;
     white-space: pre-wrap;
+  }
+}
+
+/* ===== CHECKOUT MODAL SPECIFIC STYLES ===== */
+.checkout-mock-container {
+  max-height: calc(90vh - 100px);
+  
+  /* Smooth scrolling */
+  scroll-behavior: smooth;
+  
+  /* Custom scrollbar for webkit browsers */
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+    
+    &:hover {
+      background: #a8a8a8;
+    }
+  }
+}
+
+/* Ajustes para dispositivos móviles */
+@media (max-width: 768px) {
+  .checkout-mock-container {
+    max-height: calc(90vh - 50px);
+    margin: 16px auto !important;
+    padding: 24px 16px !important;
+  }
+}
+
+/* ===== CANCEL BUTTON STYLES ===== */
+.cancel-btn {
+  background: #fff !important;
+  color: #EF534F !important;
+  border: 2px solid #EF534F !important;
+  font-weight: 600 !important;
+  font-size: 1rem !important;
+  padding: 12px 0 !important;
+  flex: 1 !important;
+  border-radius: 8px !important;
+  border-inline-end: 2px solid #EF534F !important;
+  border-inline-start: 2px solid #EF534F !important;
+  transition: all 0.3s ease !important;
+  cursor: pointer !important;
+  
+  &:hover {
+    background: #EF534F !important;
+    color: #fff !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(239, 83, 79, 0.3);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+  
+  .v-btn__content {
+    font-weight: 600 !important;
   }
 }
 
@@ -1929,7 +1998,7 @@ background: #fbf8f8;
   max-width: 400px;
   min-width: 300px;
 
-  .toast-content {
+  .error-content {
     display: flex;
     align-items: center;
     background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
@@ -1941,47 +2010,62 @@ background: #fbf8f8;
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.1);
 
-    .toast-icon {
+    mat-icon {
       margin-right: 12px;
       font-size: 20px;
       color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 24px;
-      
-      .iconfont {
-        font-weight: bold;
-      }
     }
 
-    .toast-message {
+    span {
       flex: 1;
       font-weight: 500;
       line-height: 1.4;
       font-size: 14px;
     }
+  }
 
-    .toast-close {
-      background: none;
-      border: none;
-      color: white;
-      cursor: pointer;
+  // Animación de entrada y salida mejorada
+  &.ng-enter {
+    animation: slideInFromTop 0.3s ease-out;
+  }
+
+  &.ng-leave {
+    animation: slideOutToTop 0.3s ease-in;
+  }
+}
+
+/* ===== SUCCESS TOAST STYLES ===== */
+.success-toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 10000;
+  max-width: 400px;
+  min-width: 300px;
+
+  .success-content {
+    display: flex;
+    align-items: center;
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    color: white;
+    padding: 16px 20px;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(76, 175, 80, 0.3),
+                0 4px 16px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+
+    mat-icon {
+      margin-right: 12px;
       font-size: 20px;
-      font-weight: bold;
-      margin-left: 12px;
-      padding: 0;
-      width: 24px;
-      height: 24px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 50%;
-      transition: background-color 0.2s ease;
+      color: #fff;
+    }
 
-      &:hover {
-        background-color: rgba(255, 255, 255, 0.1);
-      }
+    span {
+      flex: 1;
+      font-weight: 500;
+      line-height: 1.4;
+      font-size: 14px;
     }
   }
 

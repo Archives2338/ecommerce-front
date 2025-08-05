@@ -1,0 +1,923 @@
+.v-input__slot {
+  display: flex;
+  align-items: center;
+  height: 50px !important;
+}
+.v-text-field__slot input[type="password"] {
+  height: 40px;
+  line-height: 40px;
+  margin: 0 auto;
+  display: block;
+  width: 100%;
+  font-size: 1rem;
+  padding: 0 12px;
+  box-sizing: border-box;
+}
+.red-btn {
+  background: #e53935 !important;
+  color: #fff !important;
+  border: none;
+}
+.red-btn:disabled {
+  background: #bdbdbd !important;
+  color: #fff !important;
+}
+// Estilos para el modal de establecer contraseña
+.set-password-modal {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal-content {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+}
+.email {
+  font-weight: bold;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+.set-pwd-input {
+  width: 100%;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+.password-tips {
+  font-size: 0.95rem;
+  margin: 1rem 0;
+  color: #555;
+}
+.error {
+  color: #e53935;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+.reset-btn {
+  width: 100%;
+  padding: 0.75rem;
+  margin-top: 1rem;
+  background: #1976d2;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.reset-btn:disabled {
+  background: #bdbdbd;
+  cursor: not-allowed;
+}
+.container {
+  background-color: #f5f5f5;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.header-logo {
+  padding: 28px 88px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  
+  img {
+    max-width: 148px;
+    height: auto;
+  }
+}
+
+.container_form {
+  display: flex;
+  flex: 1;
+  min-width: 320px;
+  max-width: 1200px;
+  width: auto;
+  padding: 0px 88px;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.pc-container {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 140px);
+}
+
+// Formulario de entrada
+.v-input {
+  border-radius: 8px;
+  height: 50px;
+  margin: 16px 0px;
+  
+  .v-input__slot {
+    border: 2px solid #ebebeb;
+    border-radius: 8px;
+    background: white;
+    display: flex;
+    align-items: center;
+    
+    input {
+      border: none;
+      outline: none;
+      padding: 0 16px;
+      width: 100%;
+      height: 100%;
+      font-size: 16px;
+      flex: 1;
+      min-width: 0; // Permite que el input se comprima si es necesario
+      
+      &::placeholder {
+        color: #969799;
+      }
+      
+      &.invalid {
+        border-color: #ff4757;
+      }
+      
+      &:focus {
+        border-color: #ef534f;
+      }
+      
+      // Estilo específico para inputs readonly (como el email)
+      &[readonly] {
+        background-color: #f8f9fa;
+        color: #495057;
+        cursor: not-allowed;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+      }
+    }
+  }
+}
+
+// Divider con texto
+.van-divider {
+  display: flex;
+  align-items: center;
+  margin: 16px 0;
+  color: #969799;
+  font-size: 14px;
+  line-height: 24px;
+  border-color: #ebedf0;
+  border-style: solid;
+  border-width: 0;
+
+  .divider-text {
+    font-size: 16px;
+    font-weight: normal;
+    line-height: 20px;
+    letter-spacing: 0px;
+    color: #1a1816;
+    padding: 0 16px;
+    white-space: nowrap;
+  }
+
+  &::before,
+  &::after {
+    content: '';
+    display: block;
+    flex: 1;
+    height: 1px;
+    border-top: 1px solid #ebedf0;
+  }
+
+  &::before {
+    margin-right: 16px;
+  }
+
+  &::after {
+    margin-left: 16px;
+  }
+
+  &.van-divider--hairline {
+    &::before,
+    &::after {
+      transform: scaleY(0.5);
+    }
+  }
+}
+
+// Botón principal
+.verify-btn {
+  width: 100%;
+  height: 52px !important;
+  border-radius: 8px;
+  background: #ef534f;
+  border: 2px solid #ef534f;
+  color: #fff;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &:hover:not(:disabled) {
+    background: #d63031;
+    border-color: #d63031;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(239, 83, 79, 0.3);
+  }
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+  
+  &.loading {
+    .loading-spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid transparent;
+      border-top: 2px solid #fff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-right: 8px;
+    }
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+// Clases de utilidad
+.mb-5 {
+  margin-bottom: 20px !important;
+}
+
+.mb-3 {
+  margin-bottom: 12px !important;
+}
+
+.mb-8 {
+  margin-bottom: 32px !important;
+}
+
+.mt-8 {
+  margin-top: 32px !important;
+}
+
+.my-4 {
+  margin-top: 16px !important;
+  margin-bottom: 16px !important;
+}
+
+.my-6 {
+  margin-top: 24px !important;
+  margin-bottom: 24px !important;
+}
+
+.ma-2 {
+  margin: 8px !important;
+}
+
+.d-flex {
+  display: flex !important;
+}
+
+.align-center {
+  align-items: center !important;
+}
+
+.justify-center {
+  justify-content: center !important;
+}
+
+.text-center {
+  text-align: center !important;
+}
+
+.font-weight-700 {
+  font-weight: 700;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+// Links
+a {
+  display: contents;
+  text-decoration: none;
+  color: #ef534f;
+  font-size: inherit;
+  background-color: transparent;
+  
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+// Descripción de términos
+.terms-description {
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0px;
+  color: #666;
+}
+
+// Botones de login social
+.tripartite-login {
+  margin-bottom: 24px;
+  
+  .tripartite-login-btn {
+    width: 52px;
+    height: 52px;
+    border-radius: 8px;
+    background: #fff;
+    box-sizing: border-box;
+    border: 2px solid #ebebeb;
+    margin: 0 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    
+    &:hover {
+      border-color: #ef534f;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .v-btn__content {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      
+      svg {
+        width: 20px;
+        height: 20px;
+      }
+    }
+  }
+}
+
+// Título de login
+.login-title {
+  font-size: 24px;
+  font-weight: bold;
+  line-height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: 0px;
+  color: #1a1816;
+  text-align: center;
+}
+
+// Responsive design
+@media screen and (min-width: 1200px) {
+  .pc-container {
+    .welcome-tips-title {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-size: calc(1.5rem + 2vw);
+      line-height: 1.2;
+      font-weight: bold;
+      letter-spacing: 0px;
+      color: #1a1816;
+      margin-right: 44px;
+      word-break: break-word;
+      display: flex;
+      justify-content: flex-end;
+      flex-grow: 1;
+      flex-direction: column;
+      text-align: right;
+    }
+  }
+}
+
+@media screen and (min-width: 900px) {
+  .login-email-verification-card {
+    width: 375px;
+    padding: 20px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0px 10px 40px 0px rgba(0, 0, 0, 0.05);
+    backdrop-filter: blur(10px);
+  }
+}
+
+@media screen and (max-width: 899px) {
+  .welcome-tips-title {
+    display: none;
+  }
+  
+  .pc-container {
+    justify-content: center;
+    padding: 20px 0;
+  }
+  
+  .login-email-verification-card {
+    width: 100%;
+    max-width: 375px;
+    padding: 20px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0px 10px 40px 0px rgba(0, 0, 0, 0.05);
+    backdrop-filter: blur(10px);
+  }
+  
+  .container .header-logo {
+    padding: 20px;
+    justify-content: center;
+  }
+  
+  .container .container_form {
+    padding: 0 20px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .tripartite-login {
+    .tripartite-login-btn {
+      width: 48px;
+      height: 48px;
+      margin: 0 8px;
+    }
+  }
+  
+  .header-logo {
+    padding: 16px;
+    
+    img {
+      max-width: 120px;
+    }
+  }
+}
+
+// Imagen responsive
+.v-image {
+  &.v-responsive {
+    display: flex;
+    align-items: center;
+  }
+  
+  .v-image__image {
+    background-size: contain;
+    background-repeat: no-repeat;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+// Logo móvil (oculto en desktop)
+.mobile-logo-img {
+  @media screen and (min-width: 900px) {
+    display: none !important;
+  }
+}
+
+// Modal overlay y estilos
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.van-dialog {
+  background: white;
+  border-radius: 16px;
+  max-width: 400px;
+  width: 90%;
+  margin: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  
+  .van-dialog__content {
+    padding: 24px;
+    text-align: center;
+  }
+  
+  .close-btn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: #f5f5f5;
+    color: #666;
+    
+    &:hover {
+      background-color: #e0e0e0;
+    }
+  }
+  
+  .tips {
+    font-size: 16px;
+    color: #333;
+    margin: 20px 0;
+    line-height: 1.5;
+  }
+  
+  .know-btn {
+    margin-top: 20px;
+    padding: 12px 32px;
+    border: 2px solid #ef5350;
+    color: #ef5350;
+    background: white;
+    border-radius: 8px;
+    font-weight: 500;
+    
+    &:hover {
+      background-color: #ef5350;
+      color: white;
+    }
+  }
+  
+  .van-dialog__footer {
+    height: 16px;
+  }
+}
+
+// Estilos de verificación de email
+.email-verification-card {
+  .verification-title {
+    text-align: center;
+    font-size: 24px;
+    font-weight: 600;
+    color: #333;
+  }
+  
+  .verification-description {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.5;
+  }
+
+  // NUEVA IMPLEMENTACIÓN SIMPLE SIN VUETIFY
+  .opt-input {
+    padding: 20px 0;
+  }
+  
+  .simple-otp-container {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    max-width: 280px;
+    margin: 0 auto;
+  }
+  
+  .simple-otp-field {
+    width: 60px !important;
+    height: 60px !important;
+    border: 2px solid #e0e0e0 !important;
+    border-radius: 8px !important;
+    background: white !important;
+    text-align: center !important;
+    font-size: 24px !important;
+    font-weight: 600 !important;
+    color: #333 !important;
+    outline: none !important;
+    box-sizing: border-box !important;
+    
+    &:focus {
+      border-color: #ef5350 !important;
+      box-shadow: 0 0 0 2px rgba(239, 83, 80, 0.2) !important;
+    }
+    
+    &::placeholder {
+      color: #ccc !important;
+    }
+  }
+  
+  .base-btn {
+    margin: 8px;
+    padding: 12px 24px;
+    border-radius: 25px;
+    font-weight: 500;
+    
+    &.verify-code-btn {
+      background-color: #ef5350;
+      color: white;
+      border: none;
+      
+      &:not(.v-btn--disabled):hover {
+        background-color: #d32f2f;
+      }
+      
+      &.v-btn--disabled {
+        background-color: #cccccc;
+        color: #666;
+      }
+    }
+    
+    &.resend-code-btn {
+      background-color: white;
+      color: #ef5350;
+      border: 2px solid #ef5350;
+      
+      &:hover {
+        background-color: #ef5350;
+        color: white;
+      }
+    }
+  }
+  
+  .email-tips {
+    font-size: 14px;
+    color: #999;
+    line-height: 1.4;
+  }
+  
+  .show-more {
+    .cursor-pointer {
+      color: #ef5350;
+      font-size: 14px;
+      
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+// Estilos para el formulario de login con contraseña
+.password-login-card {
+  .login-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #333;
+    text-align: center;
+    margin: 16px 0;
+  }
+
+  // Input fields styling
+  .v-input {
+    margin-bottom: 16px;
+    
+    .v-input__slot {
+      position: relative;
+      border: 2px solid #ebebeb;
+      border-radius: 8px;
+      background: white;
+      height: 50px;
+      transition: border-color 0.3s ease;
+      display: flex;
+      align-items: center;
+      
+      &:focus-within {
+        border-color: #ef534f;
+      }
+      
+      fieldset {
+        border: none;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        pointer-events: none;
+        
+        legend {
+          visibility: hidden;
+        }
+      }
+      
+      .v-text-field__slot {
+        display: flex;
+        align-items: center;
+        height: 100%;
+        padding: 0 16px;
+        flex: 1;
+        min-width: 0; // Permite que el contenido se comprima
+        
+        input {
+          border: none;
+          outline: none;
+          width: 100%;
+          min-width: 0; // Permite que el input se comprima
+          height: 100%;
+          font-size: 16px;
+          background: transparent;
+          color: #333;
+          flex: 1;
+          
+          &::placeholder {
+            color: #969799;
+          }
+          
+          &[readonly] {
+            background-color: #f5f5f5;
+            color: #666;
+            cursor: not-allowed;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+          }
+        }
+      }
+      
+      .v-input__append-inner {
+        display: flex;
+        align-items: center;
+        padding-right: 12px;
+        padding-left: 8px; // Espacio entre input y icono
+        flex-shrink: 0; // No se comprime
+        
+        .animation-icon {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 32px;
+          height: 32px;
+          flex-shrink: 0; // Mantiene el tamaño del icono
+          
+          svg {
+            width: 24px;
+            height: 24px;
+            opacity: 0.6;
+            transition: opacity 0.3s ease;
+          }
+        }
+        
+        // Cursor pointer para el icono de password toggle
+        &:has(div[style*="cursor: pointer"]) {
+          cursor: pointer;
+          
+          .animation-icon svg {
+            opacity: 0.8;
+            
+            &:hover {
+              opacity: 1;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Enlaces de ayuda (olvidar contraseña y código de verificación)
+  .code-login {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 16px 0 24px 0;
+    font-size: 14px;
+    
+    a {
+      color: #ef534f;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      
+      &:hover {
+        text-decoration: underline;
+        color: #d32f2f;
+      }
+      
+      &.text-left {
+        flex: 1;
+        text-align: left;
+      }
+      
+      &.text-right {
+        flex: 1;
+        text-align: right;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        
+        .mr-2 {
+          margin-right: 8px;
+        }
+        
+        svg {
+          width: 6px;
+          height: 10px;
+          fill: #ef534f;
+          transition: transform 0.3s ease;
+        }
+        
+        &:hover svg {
+          transform: translateX(2px);
+        }
+      }
+    }
+  }
+
+  // Botón de login
+  .login-btn {
+    width: 100%;
+    height: 52px;
+    border-radius: 8px;
+    background: #ef534f;
+    border: 2px solid #ef534f;
+    color: #fff;
+    font-weight: 600;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 20px;
+    
+    .v-btn__content {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      
+      .loading-spinner {
+        width: 20px;
+        height: 20px;
+        border: 2px solid transparent;
+        border-top: 2px solid #fff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-right: 8px;
+      }
+    }
+    
+    &:hover:not(.v-btn--disabled) {
+      background: #d32f2f;
+      border-color: #d32f2f;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(239, 83, 79, 0.3);
+    }
+    
+    &.v-btn--disabled {
+      background: #cccccc !important;
+      border-color: #cccccc !important;
+      color: #666 !important;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+  }
+
+  // Sección de registro
+  .register {
+    text-align: center;
+    margin: 20px 0;
+    font-size: 14px;
+    color: #666;
+    
+    .mr-1 {
+      margin-right: 4px;
+    }
+    
+    .register-link {
+      color: #ef534f;
+      font-weight: 600;
+      text-decoration: none;
+      
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  // Botón volver
+  .show-more {
+    text-align: center;
+    margin: 16px 0;
+    
+    .cursor-pointer {
+      color: #ef534f;
+      font-size: 14px;
+      font-weight: 600;
+      
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  // Responsive adjustments
+  @media screen and (max-width: 480px) {
+    .code-login {
+      flex-direction: column;
+      gap: 12px;
+      text-align: center;
+      
+      a {
+        &.text-left,
+        &.text-right {
+          text-align: center;
+          justify-content: center;
+        }
+      }
+    }
+  }
+}

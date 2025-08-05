@@ -144,15 +144,16 @@
                         </div>
                     </div>
 
-                    <button type="button" class="category-btn letter-big"
+                    <button type="button" class="category-btn letter-big" *ngIf="homeContent?.['home8']"
                         (click)="openServiceModal(product.id); $event.stopPropagation()"
                         [attr.aria-label]="'Comprar ' + product.type_name">
-                        <span class="v-btn__content">COMPRAR AHORA</span>
+                        <span class="v-btn__content">{{ homeContent?.['home8'] }}</span>
                     </button>
 
-                    <a class="details-link" [routerLink]="['/service', product.detail_route]"
+                    <a class="details-link" *ngIf="homeContent?.['home9']"
+                        [routerLink]="['/service', product.detail_route]"
                         [attr.aria-label]="'Ver detalles de ' + product.type_name" (click)="$event.stopPropagation()">
-                        Revisar detalles
+                        {{ homeContent?.['home9'] }}
                     </a>
                 </section>
             </article>
@@ -338,7 +339,8 @@
 <div class="modal-overlay" *ngIf="showServiceModal" (click)="closeModal($event)">
     <div class="modal-container" (click)="$event.stopPropagation()">
         <!-- SKU Header -->
-        <div class="sku-header" *ngIf="modalData?.data">
+        <div class="sku-header" *ngIf="modalData?.data && !showCheckoutMock">
+
             <img class="sku-header-thumb" [src]="modalData?.data?.thumb_img" [alt]="modalData?.data?.type_name">
             <div class="sku-header-info">
                 <div>
@@ -347,6 +349,10 @@
                             <span class="gg-pr-2">
                                 <span class="currency-icon">{{ headerPlan.currency_icon1 }}</span>
                             </span>{{ headerPlan.sale_price }}
+
+                            <span class="original-price text-decoration-line-through" style="font-size: 20px;">
+                                {{ headerPlan.currency_icon1 }}{{ headerPlan.original_price }}
+                            </span>
                         </span>
                     </div>
                     <p class="average_price" *ngIf="getHeaderPlan() as headerPlan">
@@ -358,7 +364,7 @@
                 <p class="desc" *ngIf="getHeaderPlan() as headerPlan">
                     <span>Precio de renovación</span>&nbsp;
                     <span class="original-price">
-                        <span class="gg-pr-2">{{ headerPlan.currency_icon1 }}</span>{{ headerPlan.original_price }}
+                        <span class="gg-pr-2">{{ headerPlan.currency_icon1 }}</span>{{ headerPlan.sale_price }}
                     </span>
                     <span>/{{ headerPlan.month_content }}</span>
                 </p>
@@ -374,7 +380,7 @@
         </div>
 
         <!-- SKU Content (dinámico) -->
-        <div *ngIf="!isLoadingModalData && modalData?.data" class="sku-content">
+        <div *ngIf="!isLoadingModalData  && !showCheckoutMock && modalData?.data" class="sku-content">
             <div class="header-line"></div>
             <div>
                 <h4>Renovación automática Opciones</h4>
@@ -386,7 +392,7 @@
                         <button type="button"
                             class="v-btn v-btn--flat v-theme--light v-btn--density-default v-btn--size-default v-btn--variant-plain"
                             [class.v-btn--active]="isMonthSelected(monthOption.month_id)" [value]="monthOption.month_id"
-                            style="height: auto;">
+                            style="height: auto; margin-top:1px; min-width: 90px;">
                             <span class="v-btn__overlay"></span>
                             <span class="v-btn__underlay"></span>
                             <span class="v-btn__content">{{ monthOption.month_content }}</span>
@@ -395,29 +401,132 @@
                     </div>
                 </div>
 
-                <h4>{{ modalData?.data?.selectInfo || 'Seleccionar tipo' }}</h4>
-                <div class="v-btn-group v-theme--light v-btn-group--density-default v-btn-toggle btn-group">
-                    <!-- Opciones de pantalla dinámicas -->
-                    <button *ngFor="let screenOption of getAvailableScreens()" type="button"
-                        class="v-btn v-btn--flat v-theme--light v-btn--density-default v-btn--size-default v-btn--variant-plain"
-                        [class.v-btn--active]="isScreenSelected(screenOption.screen_id)"
-                        [value]="screenOption.screen_id" style="height: auto; opacity: 1;"
-                        (click)="onScreenSelect(screenOption.screen_id)">
-                        <span class="v-btn__overlay"></span>
-                        <span class="v-btn__underlay"></span>
-                        <span class="v-btn__content">
-                            {{ screenOption.screen_content }}&nbsp;
-                            <span class="tips">({{ screenOption.seat_type }})</span>
-                        </span>
-                    </button>
-                </div>
+
+                <ng-container *ngIf="!showCheckoutMock">
+                    <h4>{{ modalData?.data?.selectInfo || 'Seleccionar tipo' }}</h4>
+                    <div class="v-btn-group v-theme--light v-btn-group--density-default v-btn-toggle btn-group">
+                        <!-- Opciones de pantalla dinámicas -->
+                        <button *ngFor="let screenOption of getAvailableScreens()" type="button"
+                            class="v-btn v-btn--flat v-theme--light v-btn--density-default v-btn--size-default v-btn--variant-plain"
+                            [class.v-btn--active]="isScreenSelected(screenOption.screen_id)"
+                            [value]="screenOption.screen_id" style="height: auto; opacity: 1;"
+                            (click)="onScreenSelect(screenOption.screen_id)">
+                            <span class="v-btn__overlay"></span>
+                            <span class="v-btn__underlay"></span>
+                            <span class="v-btn__content">
+                                {{ screenOption.screen_content }}&nbsp;
+                                <span class="tips">({{ screenOption.seat_type }})</span>
+                            </span>
+                        </button>
+                    </div>
+
+                    <!-- Código promocional -->
+                    <div class="discount-wrapper-box">
+                        <div class="discount-title">
+                            <b class="text-decoration-underline cursor-pointer w-90">¿Tiene un código promocional o
+                                cupón?</b>
+                        </div>
+                    </div>
+                </ng-container>
             </div>
 
             <div class="footer-line"></div>
         </div>
 
+        <!-- Vista mock de pago Yape/Plin -->
+        <div *ngIf="showCheckoutMock && !showPaymentSuccess" class="checkout-mock-container"
+            style="background: #fff; border-radius: 18px; padding: 32px 24px; max-width: 450px; margin: 32px auto; display: flex; flex-direction: column; align-items: center;">
+            <div style="width: 100%; text-align: center;">
+                <h2 style="font-size: 2rem; font-weight: 700; color: #EF534F; margin-bottom: 18px;">Pago con Yape</h2>
+                <p style="font-size: 1.1rem; color: #333; margin-bottom: 12px;">
+                    {{ showQRCode ? 'Escanea el código QR para realizar el pago' : 'Comprobante cargado correctamente'
+                    }}
+                </p>
+            </div>
+
+            <!-- QR Code - Se oculta cuando se carga una imagen -->
+            <div *ngIf="showQRCode"
+                style="background: #f7f7f7; border-radius: 12px; padding: 18px; margin-bottom: 18px; box-shadow: 0 1px 6px rgba(0,0,0,0.06);">
+                <img src="assets/img/services/qr-yape.jpeg" alt="QR Yape"
+                    style="height:220px; width:220px; object-fit:contain; border-radius: 8px;" />
+            </div>
+
+            <!-- Sección de subida de comprobante -->
+            <div style="width: 100%; margin-bottom: 20px;">
+                <h3 style="font-size: 1.2rem; color: #333; margin-bottom: 12px; text-align: center;">
+                    {{ showQRCode ? 'Sube tu comprobante de pago' : 'Tu comprobante' }}
+                </h3>
+
+                <!-- Input de archivo - Solo se muestra si no hay imagen cargada -->
+                <div *ngIf="!paymentReceiptPreview" style="margin-bottom: 16px;">
+                    <input type="file" id="receipt-upload" accept=".jpg,.jpeg,.png,.webp"
+                        (change)="onReceiptFileSelected($event)" style="display: none;">
+                    <label for="receipt-upload"
+                        style="display: block; width: 100%; padding: 12px; border: 2px dashed #EF534F; border-radius: 8px; text-align: center; cursor: pointer; background: #fafafa; transition: all 0.2s ease;">
+                        <span style="color: #666; font-size: 14px;">
+                            Hacer clic para seleccionar imagen (JPG, PNG, WEBP)
+                        </span>
+                    </label>
+                </div>
+
+                <!-- Preview de la imagen -->
+                <div *ngIf="paymentReceiptPreview" style="text-align: center; margin-bottom: 16px;">
+                    <img [src]="paymentReceiptPreview" alt="Comprobante de pago"
+                        style="max-width: 200px; max-height: 200px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                </div>
+
+                <!-- Botón para regresar al QR -->
+                <div *ngIf="!showQRCode && paymentReceiptPreview" style="text-align: center; margin-bottom: 16px;">
+                    <button
+                        class="v-btn v-btn--density-default v-btn--rounded v-btn--size-default v-btn--variant-outlined"
+                        style="background: #fff; color: #666; border: 1px solid #ddd; font-weight: 500; font-size: 0.9rem; padding: 8px 16px; border-radius: 6px;"
+                        (click)="goBackToQR()">
+                        ← Regresar al QR
+                    </button>
+                </div>
+            </div>
+
+            <div style="width: 100%; display: flex; gap: 12px;">
+                <button
+                    class="v-btn v-btn--density-default v-btn--rounded v-btn--size-default v-btn--variant-outlined cancel-btn"
+                    (click)="closeCheckoutModal()">Cancelar</button>
+                <button
+                    class="v-btn v-btn--density-default v-btn--rounded v-btn--size-default v-btn--variant-filled payment"
+                    style="background: #EF534F; color: #fff; font-weight: 600; font-size: 1rem; padding: 12px 0; flex: 1; border-radius: 8px;"
+                    [disabled]="!selectedPaymentReceipt || isUploadingReceipt"
+                    [style.opacity]="(selectedPaymentReceipt && !isUploadingReceipt) ? '1' : '0.5'"
+                    [style.cursor]="(selectedPaymentReceipt && !isUploadingReceipt) ? 'pointer' : 'not-allowed'"
+                    (click)="processPaymentOrder()">
+                    <span *ngIf="!isUploadingReceipt">Finalizar</span>
+                    <span *ngIf="isUploadingReceipt">Procesando...</span>
+                </button>
+            </div>
+            <div style="margin-top: 18px; text-align: center; color: #888; font-size: 0.95rem;">
+                <span>¿Tienes problemas con el pago? <a href="/support"
+                        style="color: #EF534F; text-decoration: underline;">Contacta soporte</a></span>
+            </div>
+        </div>
+
+        <!-- Vista de éxito del pago -->
+        <div *ngIf="showPaymentSuccess" class="payment-success-container"
+            style="background: #fff; border-radius: 18px; padding: 40px 24px; max-width: 400px; margin: 32px auto; display: flex; flex-direction: column; align-items: center; text-align: center;">
+            <div
+                style="width: 80px; height: 80px; background: #4CAF50; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 24px;">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z"
+                        stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+            </div>
+            <h2 style="font-size: 1.8rem; font-weight: 700; color: #4CAF50; margin-bottom: 16px;">¡Pago Exitoso!</h2>
+            <p style="font-size: 1rem; color: #666; margin-bottom: 20px;">Tu orden ha sido procesada correctamente. Te
+                redirigiremos a tus suscripciones en breve.</p>
+            <div style="width: 60px; height: 4px; background: #4CAF50; border-radius: 2px; margin: 0 auto;"></div>
+        </div>
+
         <!-- Botones de pago -->
-        <div class="pay-btn w-100" *ngIf="!isLoadingModalData && modalData?.data">
+        <div class="pay-btn w-100"
+            *ngIf="!isLoadingModalData && modalData?.data && !showCheckoutMock && !showPaymentSuccess">
             <button type="button"
                 class="v-btn v-btn--density-default v-btn--rounded v-btn--size-default v-btn--variant-text mr-4 flex-1"
                 (click)="closeModal()">
@@ -427,11 +536,13 @@
             </button>
             <button type="button"
                 class="v-btn v-btn--density-default v-btn--rounded v-btn--size-default v-btn--variant-text payment flex-1"
-                (click)="onPayNow()" [disabled]="!currentSelectedPlan"
-                style="color: rgb(255, 255, 255); caret-color: rgb(255, 255, 255);">
+                (click)="onPayNow()" [disabled]="!currentSelectedPlan || isCreatingOrder"
+                style="color: rgb(255, 255, 255); caret-color: rgb(255, 255, 255);"
+                [style.opacity]="(!currentSelectedPlan || isCreatingOrder) ? '0.5' : '1'">
                 <span class="v-btn__overlay"></span>
                 <span class="v-btn__underlay"></span>
-                <span class="v-btn__content">Pagar ahora</span>
+                <span class="v-btn__content" *ngIf="!isCreatingOrder">Pagar ahora</span>
+                <span class="v-btn__content" *ngIf="isCreatingOrder">Creando orden...</span>
             </button>
         </div>
     </div>
@@ -439,15 +550,16 @@
 
 <!-- Toast de error -->
 <div class="error-toast" *ngIf="showErrorToast" [@slideIn]>
-    <div class="toast-content">
-        <div class="toast-icon">
-            <span class="iconfont icon-warning"></span>
-        </div>
-        <div class="toast-message">
-            {{ errorToastMessage }}
-        </div>
-        <button class="toast-close" (click)="showErrorToast = false" aria-label="Cerrar notificación">
-            ×
-        </button>
+    <div class="error-content">
+        <mat-icon>error</mat-icon>
+        <span>{{ errorToastMessage }}</span>
+    </div>
+</div>
+
+<!-- Toast de éxito -->
+<div class="success-toast" *ngIf="showSuccessToast" [@slideIn]>
+    <div class="success-content">
+        <mat-icon>check_circle</mat-icon>
+        <span>{{ successToastMessage }}</span>
     </div>
 </div>

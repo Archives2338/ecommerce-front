@@ -10,8 +10,12 @@
   <button (click)="refreshContent()" class="retry-button">Reintentar</button>
 </div>
 
-<!-- Contenido principal -->
-<div *ngIf="!isLoading" class="main-content">
-  <app-header [preloadedContent]="headerContent"></app-header>
-  <app-home [preloadedContent]="homeContent"></app-home>
+<!-- Contenido principal - solo se muestra cuando NO estamos en auth -->
+<div class="main-content">
+  <app-header *ngIf="!isLoading && !isAuthRoute" [isLoggedIn]="isLoggedIn"
+    [preloadedContent]="headerContent"></app-header>
+  <router-outlet></router-outlet>
+
 </div>
+
+<!-- Router outlet - para páginas como auth -->

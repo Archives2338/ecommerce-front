@@ -1,10 +1,14 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { HeaderComponent } from './shared/header/header.component';
 import { HomeComponent } from './pages/home/home.component';
 import { HeaderConfig } from './shared/header/header.component';
 import { ContentService, HeaderContent, HomeContent } from './services/content.service';
+import { AuthService } from './services/auth.service';
+import { filter, takeUntil } from 'rxjs/operators';
+import { Subject } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -12,18 +16,24 @@ import { ContentService, HeaderContent, HomeContent } from './services/content.s
   imports: [
     CommonModule,
     FormsModule,
+    RouterModule,
     HeaderComponent,
-    HomeComponent
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, OnDestroy {
   title = 'streaming-ecommerce';
+  
+  // Subject para manejar la destrucción del componente
+  private destroy$ = new Subject<void>();
   
   // Estado de carga
   isLoading = true;
   loadingError = false;
+  
+  // Estado de ruta
+  isAuthRoute = false;
   
   // Contenido cargado del backend
   headerContent: HeaderContent = {};
@@ -48,11 +58,54 @@ export class AppComponent implements OnInit {
   isLoggedIn: boolean = false;
   showPromotion: boolean = false;
 
-  constructor(private contentService: ContentService) {}
+  constructor(
+    private contentService: ContentService,
+    private router: Router,
+    private authService: AuthService
+  ) {
+    // Detectar la ruta inicial
+    this.isAuthRoute = this.router.url.includes('/auth');
+    
+    // Detectar cambios de ruta
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe((event: NavigationEnd) => {
+      this.isAuthRoute = event.url.includes('/auth');
+    });
+  }
 
   ngOnInit(): void {
+    // Suscribirse al estado de autenticación del AuthService
+    this.authService.currentUser$.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe(user => {
+      this.isLoggedIn = !!user;
+      console.log('Estado de autenticación actualizado:', this.isLoggedIn, user);
+    });
+
+    // Si tienes avatar guardado, puedes cargarlo aquí
+    const avatar = localStorage.getItem('user_avatar');
+    if (avatar) {
+      this.userAvatar = avatar;
+    }
     // Cargar todo el contenido de la página principal en una sola petición
     this.loadMainPageContent();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+  /**
+   * Llamar esto después de login exitoso para actualizar el estado global
+   */
+  setLoggedInState(token: string, avatar?: string): void {
+    localStorage.setItem('token', token);
+    this.isLoggedIn = true;
+    if (avatar) {
+      localStorage.setItem('user_avatar', avatar);
+      this.userAvatar = avatar;
+    }
   }
 
   /**
@@ -99,94 +152,9 @@ export class AppComponent implements OnInit {
   }
 
   /**
-   * Actualiza los colores del header dinámicamente
-   */
-  updateHeaderColors(): void {
-    // Aplicar colores CSS personalizados
-    document.documentElement.style.setProperty('--header-bg-color', this.headerConfig.backgroundColor);
-    document.documentElement.style.setProperty('--header-text-color', this.headerConfig.textColor);
-  }
-
-  /**
-   * Simula login/logout
-   */
-  simulateLogin(): void {
-    this.isLoggedIn = !this.isLoggedIn;
-    if (this.isLoggedIn) {
-      this.userAvatar = 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face';
-    } else {
-      this.userAvatar = '';
-    }
-  }
-
-  /**
-   * Muestra una notificación de prueba
-   */
-  showNotification(): void {
-    // Esta funcionalidad se implementaría comunicándose con el HeaderComponent
-    console.log('Mostrar notificación - implementar comunicación con HeaderComponent');
-  }
-
-  /**
    * Refresca el contenido del backend
    */
   refreshContent(): void {
     this.loadMainPageContent();
-  }
-
-  /**
-   * Cambia el ancho del header
-   */
-  changeHeaderWidth(width: 'normal' | 'expanded' | 'full-width'): void {
-    this.headerConfig = {
-      ...this.headerConfig,
-      headerWidth: width,
-      maxWidth: width === 'normal' ? '1200px' : 
-               width === 'expanded' ? '1600px' : 
-               '100%'
-    };
-  }
-
-  /**
-   * Obtiene el texto del botón según el ancho actual
-   */
-  getWidthButtonText(): string {
-    switch (this.headerConfig.headerWidth) {
-      case 'normal':
-        return 'Ancho: Normal (1200px)';
-      case 'expanded':
-        return 'Ancho: Expandido (1600px)';
-      case 'full-width':
-        return 'Ancho: Completo (100%)';
-      default:
-        return 'Ancho: Normal';
-    }
-  }
-
-  /**
-   * Obtiene ejemplo de la API para mostrar en la documentación
-   */
-  getApiExample(): string {
-    return JSON.stringify({
-      "code": 0,
-      "message": "Listo",
-      "toast": 0,
-      "redirect_url": "",
-      "type": "success",
-      "data": {
-        "head": {
-          "head1": "PÁGINA DE INICIO",
-          "head2": "AFILIATE", 
-          "head3": "SOPORTE-POSTVENTA",
-          "head4": "SUSCRIPCIÓN",
-          "head5": "VENDENOS",
-          "head6": "Buscar...",
-          "head7": "No se encontraron resultados",
-          "params": {
-            "{affiliate_Big}": "AFFILIATE"
-          }
-        }
-      }
-    }, null, 2);
   }
 }

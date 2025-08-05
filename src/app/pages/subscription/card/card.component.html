@@ -1,0 +1,227 @@
+<div id="macy">
+    <div class="ticket" data-macy-complete="1" style="
+
+
+  ">
+        <div data-v-9034ee4f="" class="ticket-header">
+            <div data-v-9034ee4f="" class="spu">
+                <img data-v-9034ee4f="" [src]="card.detail_logo" /><span data-v-9034ee4f="">{{card.nombre}}</span>
+            </div>
+            <div data-v-9034ee4f="" class="d-flex align-center">
+                <button data-v-9034ee4f="" type="button"
+                    class="v-btn v-theme--light v-btn--density-default v-btn--rounded v-btn--size-default v-btn--variant-text"
+                    style="color: rgb(255, 255, 255); caret-color: rgb(255, 255, 255)">
+                    <span class="v-btn__overlay"></span><span class="v-btn__underlay"></span><span
+                        class="v-btn__content" data-no-activator="">Renovar</span></button>
+            </div>
+        </div>
+        <div data-v-6cacc4b2="" class="ticket-aid">
+            <ul data-v-6cacc4b2="" class="ticket-tips">
+                <li data-v-6cacc4b2="">
+                    <mat-icon class="icon-check">done</mat-icon>
+                    Renovar la misma suscripción sin cambiar
+                </li>
+                <li data-v-6cacc4b2="">
+                    <mat-icon class="icon-check">done</mat-icon>
+                    Atención al cliente privada 24 horas al día, 7 días a la semana
+                </li>
+                <li data-v-6cacc4b2="">
+                    <mat-icon class="icon-check">done</mat-icon>
+                    Garantía, garantía de reembolso.
+                </li>
+            </ul>
+        </div>
+        <div class="ticket-content">
+
+            <ul>
+                <li>
+                    <span class="label">Tiempo restante</span><span class="remind">{{this.tiempoRestante}}</span>
+                </li>
+                <li>
+                    <span class="label">Tiempo de inicio</span><span>{{card.fecha_inicio}} 12:00:00</span>
+                </li>
+                <li>
+                    <span class="label">expirar el tiempo</span><span>{{card.fecha_cobro}} 12:00:00</span>
+                </li>
+
+                <li>
+                    <span class="label">Nombre de usuario</span>
+                    <div class="d-flex align-center justify-space-between cursor-pointer">
+                        <span>{{card.correo}}</span><img src="https://static.gamsgocdn.com/gg2/images/ticket/copy.webp"
+                            class="ml-4" />
+                    </div>
+                </li>
+                <li class="ticket-password">
+                    <div class="d-flex justify-space-between">
+                        <div>
+                            <div class="label">Llave maestra</div>
+                            <p>Último cambio hace 8 días</p>
+                        </div>
+                        <button *ngIf="showPassword ==false" type="button" (click)="showPasswordMethod()"
+                            class="v-btn v-theme--light v-btn--density-default v-btn--size-default v-btn--variant-outlined password-btn">
+                            <span class="v-btn__overlay"></span><span class="v-btn__underlay"></span><span
+                                class="v-btn__content" data-no-activator="">Mostrar Llave maestra</span>
+                        </button>
+                        <div *ngIf="showPassword ==true"
+                            class="d-flex align-center justify-space-between cursor-pointer">
+                            <span class="password">{{card.contrasena}}</span><img
+                                src="https://static.gamsgocdn.com/gg2/images/ticket/copy.webp" class="ml-4" />
+                        </div>
+
+                    </div>
+                    <div class="password-reset">
+                        ¿No funciona?<span class="reset">Haga clic a reiniciar</span>
+                    </div>
+                </li>
+
+                <!-- <li  class="ticket-profile">
+        <div
+
+          class="d-flex justify-space-between align-center profile"
+        >
+          <span  class="label">perfil</span>
+          <div
+
+            class="d-flex align-center font-weight-bold"
+          >
+            Utilice el perfil NO.
+            <div  class="no">4</div>
+          </div>
+        </div>
+        <div
+
+          class="d-flex align-center cursor-pointer"
+        >
+          <img
+
+            src="https://static.gamsgocdn.com/gg2/images/ticket/angry.webp"
+            class="mr-4"
+          /><span  class="text-decoration-underline"
+            >Mi perfil está ocupada alguien!</span
+          >
+        </div>
+      </li>
+
+      <li  class="ticket-user" style="">
+        <div  class="user partner">
+          <div  class="avatar">
+            <img
+
+              src="https://gamsgo.oss-us-east-1.aliyuncs.com/gamsgo-logo-19.png"
+            />
+            <div  class="no">1</div>
+          </div>
+          <p  class="name">pablo_7273</p>
+          <img
+
+            src="/images/svgs/country/us.svg"
+            class="country"
+          />
+        </div>
+        <div  class="user partner">
+          <div  class="avatar">
+            <img
+
+              src="https://www.gamsgo.com/static/avatars/3d-ava-17.png"
+            />
+            <div  class="no">2</div>
+          </div>
+          <p  class="name">Carlos</p>
+          <img
+
+            src="/images/svgs/country/pe.svg"
+            class="country"
+          />
+        </div>
+        <div  class="user partner">
+          <div  class="avatar">
+            <img
+
+              src="https://gosplit.oss-us-east-1.aliyuncs.com/image/default9.png"
+            />
+            <div  class="no">3</div>
+          </div>
+          <p  class="name">CPremiumPeru</p>
+          <img
+
+            src="/images/svgs/country/pe.svg"
+            class="country"
+          />
+        </div>
+        <div  class="user">
+          <div  class="avatar">
+            <img
+
+              src="https://lh3.googleusercontent.com/a/ACg8ocJIi3JnQlDlsz7uL-h4V4yq7TccixUnlW2Ktrv9K1VfWyk=s96-c"
+            />
+            <div  class="no">4</div>
+          </div>
+          <p  class="name">Tú</p>
+          <img
+
+            src="/images/svgs/country/pe.svg"
+            class="country"
+          />
+        </div>
+        <div  class="user partner">
+          <div  class="avatar">
+            <img
+
+              src="https://gosplit.oss-us-east-1.aliyuncs.com/image/default16.png"
+            />
+            <div  class="no">5</div>
+          </div>
+          <p  class="name">Yuki</p>
+          <img
+
+            src="/images/svgs/country/pe.svg"
+            class="country"
+          />
+        </div>
+      </li> -->
+
+                <li class="ticket-notice pd-xl">
+                    <div>
+                        <div class="tips-block">
+                            <b>1. Utilice su propio perfil según el número.</b>
+                        </div>
+                        <div class="tips-block">
+                            <b>2. No modificar/eliminar otros perfiles</b>
+                        </div>
+                        <div class="tips-block">
+                            <b>3. No modifique la información relacionada con la
+                                suscripción.</b>
+                        </div>
+                        <div class="tips-block">
+                            <b>Si tiene algún problema, comuníquese con el servicio de
+                                atención al cliente a tiempo, compre una suscripción en
+                                MetelePlay y disfrute del servicio de atención al cliente VIP y
+                                no necesita cambiar la información de la suscripción para
+                                renovarla.</b>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+        <!-- <div data-v-9d552bdb="" class="ticket-footer">
+            <button data-v-9d552bdb="" type="button"
+                class="v-btn v-theme--light v-btn--density-default v-btn--size-default v-btn--variant-text button">
+                <span class="v-btn__overlay"></span><span class="v-btn__underlay"></span><span class="v-btn__content"
+                    data-no-activator=""><img data-v-9d552bdb=""
+                        src="https://static.gamsgocdn.com/gg2/images/ticket/renew.webp" /><span data-v-9d552bdb=""
+                        class="status-button">Renovar</span></span></button><a data-v-9d552bdb=""
+                class="v-btn v-theme--light v-btn--density-default v-btn--size-default v-btn--variant-text button"
+                href="https://help.gamsgo.com" target="_blank"><span class="v-btn__overlay"></span><span
+                    class="v-btn__underlay"></span><span class="v-btn__content" data-no-activator=""><img
+                        data-v-9d552bdb=""
+                        src="https://static.gamsgocdn.com/gg2/images/ticket/help.webp" />Ayuda</span></a><button
+                data-v-9d552bdb="" type="button"
+                class="v-btn v-theme--light v-btn--density-default v-btn--size-default v-btn--variant-text button"
+                targetref="[object Object]" aria-haspopup="menu" aria-expanded="false" aria-owns="v-menu-186">
+                <span class="v-btn__overlay"></span><span class="v-btn__underlay"></span><span class="v-btn__content"
+                    data-no-activator=""><img data-v-9d552bdb=""
+                        src="https://static.gamsgocdn.com/gg2/images/ticket/support.webp" />Apoyo</span></button>
+        </div> -->
+
+    </div>
+</div>

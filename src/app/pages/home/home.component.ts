@@ -10,6 +10,8 @@ import { ContentService, HomeContent, StreamingProduct, ProductCategory } from '
 import { SkuResponse, SkuData, SkuPlan } from '../../interfaces/sku-response.interface';
 import { ApiService } from '../../services/api.service';
 import { SkuService } from '../../services/sku.service';
+import { OrderService, CreateOrderRequest, Order } from '../../services/order.service';
+import { AuthService } from '../../services/auth.service';
 import { register } from 'swiper/element/bundle';
 
 // Registrar Swiper como Web Component
@@ -35,6 +37,23 @@ register();
   ]
 })
 export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
+  // Estado para la vista de pago mock
+  showCheckoutMock: boolean = false;
+  
+    // Propiedades para el modal de pago
+  showCheckoutModal = false;
+  selectedPaymentMethod = '';
+  selectedPaymentReceipt: File | null = null;
+  paymentReceiptPreview: string | null = null;
+  showPaymentSuccess = false;
+  showUploadView: boolean = false;
+  showQRCode: boolean = true;
+  
+  // Estado de la orden actual
+  currentOrder: Order | null = null;
+  isCreatingOrder: boolean = false;
+  isUploadingReceipt: boolean = false;
+  
   private destroy$ = new Subject<void>();
   
   @ViewChildren('swiperContainer') swiperContainers!: QueryList<ElementRef>;
@@ -62,6 +81,8 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
   // ===== PROPIEDADES DE NOTIFICACIONES =====
   showErrorToast: boolean = false;
   errorToastMessage: string = '';
+  showSuccessToast: boolean = false;
+  successToastMessage: string = '';
   
   // ===== PROPIEDADES DE SELECCIÓN DEL SKU =====
   selectedMonthId: number | null = null;
@@ -81,7 +102,9 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
     private contentService: ContentService,
     private http: HttpClient,
     private apiService: ApiService,
-    private skuService: SkuService
+    private skuService: SkuService,
+    private orderService: OrderService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -408,7 +431,7 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
   // ===== MÉTODOS DEL MODAL =====
   
   /**
-   * Abre el modal del servicio y hace la petición a la API
+   * Abre el modal del servicio y hace la petición a la API (solo una vez)
    */
   openServiceModal(productId: number): void {
     console.log('Abriendo modal para producto ID:', productId);
@@ -416,49 +439,37 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
     this.selectedProductId = productId;
     this.showServiceModal = true;
     this.isLoadingModalData = true;
-    this.modalData = null;
     this.modalError = null;
-    
-    // Usar el nuevo SkuService
-    this.skuService.getInitialSku(productId)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (response) => {
-          console.log('Respuesta de la API:', response);
-          
-          // Verificar si la respuesta indica error
-          if (response.code !== 0 || !response.data) {
-            this.modalError = response.message || 'Error al cargar los detalles del servicio';
-            this.showServiceModal = false; // Cerrar el modal inmediatamente
-            this.isLoadingModalData = false;
-            
-            // Mostrar mensaje de error temporal (opcional)
-            this.showTemporaryErrorMessage(this.modalError);
-            return;
-          }
-          
+
+    // Solo hacer la petición inicial
+    this.skuService.getSkuList({
+      language: 'es',
+      typeId: productId,
+      source: 1
+    }).subscribe({
+      next: (response: SkuResponse) => {
+        console.log('✅ SKU Response:', response);
+        
+        if (response.code === 0 && response.data) {
           this.modalData = response;
           
-          // Establecer valores por defecto basados en la respuesta
-          if (response.data) {
-            this.selectedMonthId = response.data.plan.default_month_id;
-            this.selectedScreenId = response.data.plan.default_screen_id;
-            this.updateSelectedPlan();
-          }
+          // Establecer valores por defecto desde la respuesta
+          this.selectedMonthId = response.data.plan.default_month_id;
+          this.selectedScreenId = response.data.plan.default_screen_id;
+          
+          // Actualizar el plan seleccionado inicial
+          this.updateSelectedPlan();
           
           this.isLoadingModalData = false;
-        },
-        error: (error) => {
-          console.error('Error en la petición:', error);
-          this.modalError = 'Error de conexión. Intente nuevamente.';
-          this.showServiceModal = false; // Cerrar el modal inmediatamente
-          this.modalData = null;
-          this.isLoadingModalData = false;
-          
-          // Mostrar mensaje de error temporal
-          this.showTemporaryErrorMessage(this.modalError);
+        } else {
+          this.handleModalError(response.message || 'Error al obtener detalles del servicio');
         }
-      });
+      },
+      error: (error) => {
+        console.error('❌ Error al obtener SKU:', error);
+        this.handleModalError('Error de conexión. Por favor, inténtelo de nuevo.');
+      }
+    });
   }
   
   /**
@@ -469,13 +480,230 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
       // Si se hizo click en el overlay, cerrar el modal
       if ((event.target as HTMLElement).classList.contains('modal-overlay')) {
         this.showServiceModal = false;
+        this.showCheckoutMock = false;
+        this.showPaymentSuccess = false;
         this.resetModalData();
       }
     } else {
       // Cerrar modal desde el botón de cerrar
       this.showServiceModal = false;
+      this.showCheckoutMock = false;
+      this.showPaymentSuccess = false;
       this.resetModalData();
     }
+  }
+  
+  /**
+   * Maneja la selección de archivo de comprobante de pago
+   */
+  onReceiptFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const file = input.files[0];
+      
+      // Validar tipo de archivo
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+      if (!allowedTypes.includes(file.type)) {
+        this.showTemporaryErrorMessage('Solo se permiten archivos JPG, PNG, JPEG y WEBP');
+        return;
+      }
+      
+      // Validar tamaño (máximo 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        this.showTemporaryErrorMessage('El archivo no puede ser mayor a 5MB');
+        return;
+      }
+      
+      this.selectedPaymentReceipt = file;
+      
+      // Crear preview de la imagen
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.paymentReceiptPreview = e.target?.result as string;
+        // Ocultar QR cuando se carga la imagen
+        this.showQRCode = false;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+  
+  /**
+   * Regresa a la vista del QR y limpia la imagen seleccionada
+   */
+  goBackToQR(): void {
+    this.selectedPaymentReceipt = null;
+    this.paymentReceiptPreview = null;
+    this.showQRCode = true;
+    
+    // Limpiar el input file
+    const fileInput = document.getElementById('receipt-upload') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
+    }
+  }
+
+  /**
+   * Cierra el modal de checkout y resetea el estado
+   */
+  closeCheckoutModal(): void {
+    this.showCheckoutModal = false;
+    this.selectedPaymentMethod = '';
+    this.selectedPaymentReceipt = null;
+    this.paymentReceiptPreview = null;
+    this.showPaymentSuccess = false;
+    this.showQRCode = true;
+    
+    // Limpiar el input file
+    const fileInput = document.getElementById('receipt-upload') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
+    }
+  }
+  
+  /**
+   * Procesa la orden de pago (mock)
+   */
+  processPaymentOrder(): void {
+    if (!this.selectedPaymentReceipt) {
+      this.showTemporaryErrorMessage('Por favor, suba el comprobante de pago');
+      return;
+    }
+
+    if (!this.currentOrder) {
+      this.showTemporaryErrorMessage('No hay orden activa');
+      return;
+    }
+
+    // Subir comprobante
+    this.uploadPaymentReceipt();
+  }
+
+  /**
+   * Crear orden en el backend
+   */
+  private createOrder(): void {
+    if (!this.modalData?.data || !this.currentSelectedPlan) {
+      this.showTemporaryErrorMessage('Faltan datos para crear la orden');
+      return;
+    }
+
+    this.isCreatingOrder = true;
+
+    // Buscar la pantalla seleccionada
+    const selectedScreen = this.getSelectedScreen();
+    
+    // Mapear datos a formato de orden
+    const orderData: CreateOrderRequest = this.orderService.mapModalDataToOrder(
+      this.modalData.data,
+      this.currentSelectedPlan,
+      selectedScreen
+    );
+
+    // Validar datos
+    const validation = this.orderService.validateOrderData(orderData);
+    if (!validation.isValid) {
+      this.showTemporaryErrorMessage(`Error en datos: ${validation.errors.join(', ')}`);
+      this.isCreatingOrder = false;
+      return;
+    }
+
+    console.log('🚀 Creando orden:', orderData);
+
+    // Crear orden
+    this.orderService.createOrder(orderData)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          this.isCreatingOrder = false;
+          
+          if (response.code === 0 && response.data) {
+            console.log('✅ Orden creada exitosamente:', response.data);
+            this.currentOrder = response.data;
+            this.orderService.setCurrentOrder(response.data);
+            
+            // Mostrar vista de pago
+            this.showCheckoutMock = true;
+            
+            this.showTemporarySuccessMessage('Orden creada exitosamente');
+          } else {
+            console.error('❌ Error en respuesta:', response);
+            this.showTemporaryErrorMessage(response.message || 'Error al crear la orden');
+          }
+        },
+        error: (error) => {
+          this.isCreatingOrder = false;
+          console.error('❌ Error creando orden:', error);
+          this.showTemporaryErrorMessage(error.message || 'Error al crear la orden');
+        }
+      });
+  }
+
+  /**
+   * Subir comprobante de pago
+   */
+  private uploadPaymentReceipt(): void {
+    if (!this.currentOrder || !this.selectedPaymentReceipt) {
+      return;
+    }
+
+    this.isUploadingReceipt = true;
+
+    const additionalData = {
+      paymentReference: this.currentOrder.out_trade_no,
+      paymentAmount: this.currentOrder.total
+    };
+
+    this.orderService.attachComprobante(this.currentOrder._id, this.selectedPaymentReceipt, additionalData)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          this.isUploadingReceipt = false;
+          
+          if (response.code === 0) {
+            console.log('✅ Comprobante subido exitosamente');
+            this.showPaymentSuccess = true;
+            
+            // Auto cerrar después de 3 segundos y redirigir a subscriptions
+            // setTimeout(() => {
+            //   this.closeModal();
+            //   window.location.href = '/order';
+            // }, 3000);
+          } else {
+            this.showTemporaryErrorMessage(response.message || 'Error al subir comprobante');
+          }
+        },
+        error: (error) => {
+          this.isUploadingReceipt = false;
+          console.error('❌ Error subiendo comprobante:', error);
+          this.showTemporaryErrorMessage(error.message || 'Error al subir comprobante');
+        }
+      });
+  }
+
+  /**
+   * Obtener pantalla seleccionada
+   */
+  private getSelectedScreen(): any {
+    if (!this.modalData?.data?.plan?.screen || !this.selectedScreenId) {
+      return this.modalData?.data?.plan?.screen?.[0] || { screen_id: 1, screen_content: '1 Pantalla' };
+    }
+
+    return this.modalData.data.plan.screen.find((screen: any) => screen.screen_id === this.selectedScreenId) ||
+           this.modalData.data.plan.screen[0];
+  }
+
+  /**
+   * Mostrar mensaje de éxito temporal
+   */
+  private showTemporarySuccessMessage(message: string): void {
+    // Reutilizar el sistema de notificaciones existente pero con estilo de éxito
+    this.successToastMessage = message;
+    this.showSuccessToast = true;
+    
+    setTimeout(() => {
+      this.showSuccessToast = false;
+      this.successToastMessage = '';
+    }, 3000);
   }
   
   /**
@@ -490,29 +718,54 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
     this.currentSelectedPlan = null;
     this.modalError = null;
     this.isAutoRenewEnabled = true;
+    
+    // Limpiar datos del comprobante de pago
+    this.selectedPaymentReceipt = null;
+    this.paymentReceiptPreview = null;
+    this.showPaymentSuccess = false;
+    this.showCheckoutMock = false;
+    this.showQRCode = true;
+    
+    // Limpiar orden actual
+    this.currentOrder = null;
+    this.orderService.clearCurrentOrder();
+    this.isCreatingOrder = false;
+    this.isUploadingReceipt = false;
   }
 
   // ===== MÉTODOS DE MANEJO DEL SKU =====
 
   /**
    * Actualiza el plan seleccionado basado en las selecciones actuales
+   * Usa SOLO los datos ya cargados en modalData
    */
-  updateSelectedPlan(): void {
-    if (!this.modalData?.data || !this.selectedMonthId || !this.selectedScreenId) {
-      return;
+  private updateSelectedPlan(): void {
+    if (!this.modalData?.data) return;
+
+    // Buscar el plan en la estructura de datos ya cargada
+    const monthData = this.modalData.data.plan.month.find(m => m.month_id === this.selectedMonthId);
+    if (monthData) {
+      const screenData = monthData.screen.find(s => s.screen_id === this.selectedScreenId);
+      if (screenData) {
+        this.currentSelectedPlan = screenData;
+        console.log('✅ Plan actualizado dinámicamente:', this.currentSelectedPlan);
+        return;
+      }
     }
 
-    // Buscar el plan en base a las selecciones
-    const selectedMonth = this.modalData.data.plan.month.find(m => m.month_id === this.selectedMonthId);
-    if (selectedMonth) {
-      this.currentSelectedPlan = selectedMonth.screen.find(s => s.screen_id === this.selectedScreenId) || null;
+    // Fallback: buscar en la estructura por screen
+    const screenData = this.modalData.data.plan.screen.find(s => s.screen_id === this.selectedScreenId);
+    if (screenData) {
+      const monthPlan = screenData.month.find(m => m.month_id === this.selectedMonthId);
+      if (monthPlan) {
+        this.currentSelectedPlan = monthPlan;
+        console.log('✅ Plan actualizado dinámicamente (fallback):', this.currentSelectedPlan);
+      }
     }
-
-    console.log('Plan seleccionado actualizado:', this.currentSelectedPlan);
   }
 
   /**
-   * Maneja la selección de un período de tiempo (mes)
+   * Maneja la selección de un período de tiempo (mes) - SIN CONSULTA ADICIONAL
    */
   onMonthSelect(monthId: number): void {
     if (this.selectedMonthId === monthId) return;
@@ -521,12 +774,11 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
     this.selectedMonthId = monthId;
     this.updateSelectedPlan();
     
-    // Recargar datos si es necesario (en caso de que el backend requiera nueva consulta)
-    this.reloadSkuData();
+    // Ya no recargamos datos - todo es dinámico desde la respuesta inicial
   }
 
   /**
-   * Maneja la selección de tipo de pantalla (screen)
+   * Maneja la selección de tipo de pantalla (screen) - SIN CONSULTA ADICIONAL
    */
   onScreenSelect(screenId: number): void {
     if (this.selectedScreenId === screenId) return;
@@ -535,58 +787,20 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
     this.selectedScreenId = screenId;
     this.updateSelectedPlan();
     
-    // Recargar datos si es necesario
-    this.reloadSkuData();
+    // Ya no recargamos datos - todo es dinámico desde la respuesta inicial
   }
 
   /**
-   * Recarga los datos del SKU cuando cambian las selecciones
+   * Obtiene las opciones de meses disponibles desde los datos ya cargados
    */
-  private reloadSkuData(): void {
-    if (!this.selectedProductId || !this.selectedMonthId || !this.selectedScreenId) return;
-
-    this.isLoadingModalData = true;
-    
-    // Usar el nuevo SkuService con selecciones específicas
-    this.skuService.getSkuWithSelection(
-      this.selectedProductId,
-      this.selectedMonthId,
-      this.selectedScreenId
-    )
-    .pipe(takeUntil(this.destroy$))
-    .subscribe({
-      next: (response) => {
-        console.log('Datos recargados:', response);
-        this.modalData = response;
-        this.updateSelectedPlan();
-        this.isLoadingModalData = false;
-      },
-      error: (error) => {
-        console.error('Error recargando datos:', error);
-        this.isLoadingModalData = false;
-      }
-    });
-  }
-
-  /**
-   * Toggle del checkbox de renovación automática
-   */
-  toggleAutoRenew(): void {
-    this.isAutoRenewEnabled = !this.isAutoRenewEnabled;
-    console.log('Auto renovación:', this.isAutoRenewEnabled);
-  }
-
-  /**
-   * Obtiene los meses disponibles
-   */
-  getAvailableMonths() {
+  getAvailableMonths(): any[] {
     return this.modalData?.data?.plan?.month || [];
   }
 
   /**
-   * Obtiene las opciones de pantalla disponibles
+   * Obtiene las opciones de pantalla disponibles desde los datos ya cargados
    */
-  getAvailableScreens() {
+  getAvailableScreens(): any[] {
     return this.modalData?.data?.plan?.screen || [];
   }
 
@@ -605,18 +819,23 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   /**
-   * Obtiene el plan para el header del modal
+   * Obtiene el plan para mostrar en el header (prioriza repayment)
    */
   getHeaderPlan(): SkuPlan | null {
     if (!this.modalData?.data) return null;
-    
-    // Usar el plan de repayment para el header si está disponible
-    const repaymentData = this.modalData.data.repayment;
-    if (repaymentData?.month?.length > 0) {
-      const month = repaymentData.month.find(m => m.month_id === this.selectedMonthId) || repaymentData.month[0];
-      return month.screen.find(s => s.screen_id === this.selectedScreenId) || month.screen[0];
+
+    // Priorizar repayment si existe
+    if (this.modalData.data.repayment) {
+      const repaymentMonth = this.modalData.data.repayment.month.find(m => m.month_id === this.selectedMonthId);
+      if (repaymentMonth) {
+        const repaymentScreen = repaymentMonth.screen.find(s => s.screen_id === this.selectedScreenId);
+        if (repaymentScreen) {
+          return repaymentScreen;
+        }
+      }
     }
-    
+
+    // Fallback al plan normal
     return this.currentSelectedPlan;
   }
 
@@ -628,32 +847,33 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   /**
-   * Maneja el click en "Pagar ahora"
+   * Maneja errores del modal
+   */
+  private handleModalError(message: string): void {
+    this.isLoadingModalData = false;
+    this.showServiceModal = false;
+    this.modalError = message;
+    this.showTemporaryErrorMessage(message);
+  }
+
+  /**
+   * Procesa el pago con el plan seleccionado
    */
   onPayNow(): void {
     if (!this.currentSelectedPlan) {
-      console.warn('No hay plan seleccionado');
+      this.showTemporaryErrorMessage('No hay plan seleccionado');
       return;
     }
 
-    console.log('Procesando pago:', {
-      productId: this.selectedProductId,
-      plan: this.currentSelectedPlan,
-      autoRenew: this.isAutoRenewEnabled,
-      monthId: this.selectedMonthId,
-      screenId: this.selectedScreenId
-    });
+    if (!this.modalData?.data) {
+      this.showTemporaryErrorMessage('No hay datos del servicio');
+      return;
+    }
 
-    // Aquí implementarías la lógica de pago
-    // Por ejemplo, redirigir a una página de checkout o abrir un modal de pago
-    
-    // Ejemplo de lo que podrías hacer:
-    // this.router.navigate(['/checkout'], {
-    //   queryParams: {
-    //     planId: this.currentSelectedPlan.type_plan_id,
-    //     autoRenew: this.isAutoRenewEnabled
-    //   }
-    // });
+
+
+    // Crear orden
+    this.createOrder();
   }
 
   /**

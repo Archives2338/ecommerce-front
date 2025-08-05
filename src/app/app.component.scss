@@ -48,6 +48,27 @@
   background: #ef5350;
   color: white;
   border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background: #d32f2f;
+  }
+}
+  
+  p {
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+  }
+
+
+.retry-button {
+  background: #ef5350;
+  color: white;
+  border: none;
   padding: 10px 20px;
   border-radius: 5px;
   cursor: pointer;

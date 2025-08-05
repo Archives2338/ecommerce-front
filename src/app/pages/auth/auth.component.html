@@ -1,0 +1,409 @@
+<div class="header-logo">
+    <img src="assets/svg/logos/logo2.svg" width="148" alt="Logo" style="cursor: pointer;" (click)="goHome()" />
+</div>
+
+<!-- Modal de cuenta no encontrada -->
+<div *ngIf="showNoAccountModal" class="modal-overlay" (click)="closeNoAccountModal()">
+    <div class="van-dialog van-dialog--round-button" (click)="$event.stopPropagation()">
+        <div class="van-dialog__content">
+            <div class="close-btn cursor-pointer" (click)="closeNoAccountModal()">
+                <i class="v-icon notranslate mdi mdi-close theme--light">✕</i>
+            </div>
+            <div class="tips mt-6">
+                No se encontró una cuenta para este correo electrónico. ¿Te gustaría registrarte?
+            </div>
+            <button type="button" class="know-btn v-btn v-btn--outlined theme--light v-size--default"
+                (click)="handleSignUp()">
+                <span class="v-btn__content">Registrarse</span>
+            </button>
+        </div>
+        <div class="van-goods-action van-dialog__footer"></div>
+    </div>
+</div>
+
+<div class="container_form">
+    <div class="pc-container">
+        <div class="welcome-tips-title">
+            <div class="mb-5">¡Hola!</div>
+            <div>Compartir el Costo, Duplicar la Alegría!</div>
+        </div>
+
+        <div class="content-container">
+            <div class="login-email-verification-card">
+                <!-- Logo móvil -->
+                <div class="mobile-logo-img d-flex justify-center ma-2">
+                    <a (click)="goHome()" style="cursor: pointer;">
+                        <div class="v-image v-responsive theme--light" style="height: 25px">
+                            <div class="v-responsive__sizer" style="padding-bottom: 16.2162%"></div>
+                            <div class="v-image__image v-image__image--contain"
+                                style="background-image: url('assets/svg/logos/logo2.svg'); background-position: left center;">
+                            </div>
+                            <div class="v-responsive__content" style="width: 148px"></div>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- PASO 1: Formulario de Email -->
+                <div *ngIf="currentStep === 'email'">
+                    <!-- Título de login -->
+                    <div class="login-title mt-8 mb-3">
+                        <span>Iniciar sesión o Registrarse</span>
+                    </div>
+
+                    <!-- Botones de login social -->
+                    <div class="mb-8">
+                        <div class="tripartite-login d-flex align-center justify-center">
+                            <!-- Google Login -->
+                            <button (click)="loginGoogle()" type="button"
+                                class="tripartite-login-btn d-flex align-center justify-center v-btn v-btn--fab v-btn--has-bg v-btn--round theme--light v-size--default"
+                                title="Iniciar sesión con Google">
+                                <span class="v-btn__content">
+                                    <!-- Google Icon SVG -->
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
+                                        <g>
+                                            <g>
+                                                <g>
+                                                    <path
+                                                        d="M9.999657810287475,3.86667C11.877427810287475,3.86667,13.144127810287475,4.67778,13.866327810287476,5.35556C13.866327810287476,5.35556,16.688527810287475,2.6,16.688527810287475,2.6C14.955227810287475,0.988889,12.699627810287476,0,9.999657810287475,0C6.0885478102874755,0,2.7107678102874755,2.24444,1.0663278102874756,5.51111C1.0663278102874756,5.51111,4.299657810287476,8.02222,4.299657810287476,8.02222C5.110767810287475,5.61111,7.355217810287476,3.86667,9.999657810287475,3.86667C9.999657810287475,3.86667,9.999657810287475,3.86667,9.999657810287475,3.86667Z"
+                                                        fill="#EA4335" fill-opacity="1"></path>
+                                                </g>
+                                                <g>
+                                                    <path
+                                                        d="M19.6,10.222021787109375C19.6,9.399801787109375,19.53333,8.799803787109376,19.38889,8.177581787109375C19.38889,8.177581787109375,10,8.177581787109375,10,8.177581787109375C10,8.177581787109375,10,11.888691787109375,10,11.888691787109375C10,11.888691787109375,15.51111,11.888691787109375,15.51111,11.888691787109375C15.4,12.810911787109376,14.8,14.199801787109376,13.46667,15.133141787109375C13.46667,15.133141787109375,16.62222,17.577581787109374,16.62222,17.577581787109374C18.511110000000002,15.833141787109376,19.6,13.266471787109374,19.6,10.222021787109375C19.6,10.222021787109375,19.6,10.222021787109375,19.6,10.222021787109375Z"
+                                                        fill="#4285F4" fill-opacity="1"></path>
+                                                </g>
+                                                <g>
+                                                    <path
+                                                        d="M4.31111,11.976749860687256C4.1,11.354519860687255,3.97778,10.687859860687256,3.97778,9.998969860687255C3.97778,9.310079860687257,4.1,8.643409860687257,4.3,8.021189860687256C4.3,8.021189860687256,1.06667,5.510079860687256,1.06667,5.510079860687256C0.388889,6.865639860687256,0,8.387859860687255,0,9.998969860687255C0,11.610079860687256,0.388889,13.132299860687256,1.06667,14.487859860687255C1.06667,14.487859860687255,4.31111,11.976749860687256,4.31111,11.976749860687256C4.31111,11.976749860687256,4.31111,11.976749860687256,4.31111,11.976749860687256Z"
+                                                        fill="#FBBC05" fill-opacity="1"></path>
+                                                </g>
+                                                <g>
+                                                    <path
+                                                        d="M10.000580438346862,19.999367102355958C12.700560438346862,19.999367102355958,14.967260438346862,19.110477102355958,16.622760438346862,17.57714710235596C16.622760438346862,17.57714710235596,13.467260438346862,15.132707102355957,13.467260438346862,15.132707102355957C12.622760438346862,15.721587102355958,11.489460438346862,16.13270710235596,10.000580438346862,16.13270710235596C7.356140438346863,16.13270710235596,5.111690438346863,14.388257102355958,4.311690438346863,11.977147102355957C4.311690438346863,11.977147102355957,1.0783604383468628,14.488257102355957,1.0783604383468628,14.488257102355957C2.7228004383468627,17.754927102355957,6.089470438346863,19.999367102355958,10.000580438346862,19.999367102355958C10.000580438346862,19.999367102355958,10.000580438346862,19.999367102355958,10.000580438346862,19.999367102355958Z"
+                                                        fill="#34A853" fill-opacity="1"></path>
+                                                </g>
+                                            </g>
+                                        </g>
+                                    </svg>
+                                </span>
+                            </button>
+
+                            <!-- Facebook Login -->
+                            <div class="fb-signin-button">
+                                <button (click)="loginFacebook()" type="button"
+                                    class="tripartite-login-btn d-flex align-center justify-center v-btn v-btn--fab v-btn--has-bg v-btn--round theme--light v-size--default"
+                                    title="Iniciar sesión con Facebook">
+                                    <span class="v-btn__content">
+                                        <!-- Facebook Icon SVG -->
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="20"
+                                            viewBox="0 0 10 20">
+                                            <g>
+                                                <path
+                                                    d="M9.34476,11.165C9.34476,11.165,9.86299,7.57282,9.86299,7.57282C9.86299,7.57282,6.62101,7.57282,6.62101,7.57282C6.62101,7.57282,6.62101,5.24272,6.62101,5.24272C6.62101,4.25973,7.07306,3.30097,8.52513,3.30097C8.52513,3.30097,10,3.30097,10,3.30097C10,3.30097,10,0.242718,10,0.242718C10,0.242718,8.66209,0,7.38356,0C4.71237,0,2.96805,1.72085,2.96805,4.83495C2.96805,4.83495,2.96805,7.57282,2.96805,7.57282C2.96805,7.57282,0,7.57282,0,7.57282C0,7.57282,0,11.165,0,11.165C0,11.165,2.96805,11.165,2.96805,11.165C2.96805,11.165,2.96805,19.8495,2.96805,19.8495C3.56392,19.949,4.17353,20,4.79453,20C5.41554,20,6.02514,19.949,6.62101,19.8495C6.62101,19.8495,6.62101,11.165,6.62101,11.165C6.62101,11.165,9.34476,11.165,9.34476,11.165Z"
+                                                    fill="#1877F2" fill-opacity="1"></path>
+                                            </g>
+                                        </svg>
+                                    </span>
+                                </button>
+                            </div>
+
+                            <!-- Apple Login -->
+                            <button (click)="loginApple()" type="button"
+                                class="tripartite-login-btn d-flex align-center justify-center v-btn v-btn--fab v-btn--has-bg v-btn--round theme--light v-size--default"
+                                title="Iniciar sesión con Apple">
+                                <span class="v-btn__content">
+                                    <!-- Apple Icon SVG -->
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="19" viewBox="0 0 20 19">
+                                        <g>
+                                            <path
+                                                d="M16.3542 9.7827C16.3405 7.8627 17.9695 6.9277 18.0492 6.8747C17.1567 5.5777 15.7757 5.4097 15.2967 5.3947C14.0052 5.2647 12.7527 6.1787 12.0967 6.1787C11.4267 6.1787 10.4112 5.4087 9.3262 5.4307C7.9212 5.4537 6.6017 6.2847 5.9072 7.5727C4.4652 10.2317 5.5322 14.2877 6.9332 16.5277C7.6342 17.6257 8.4652 18.8497 9.5507 18.8107C10.6102 18.7677 11.0027 18.1267 12.2612 18.1267C13.5052 18.1267 13.8687 18.7677 14.9757 18.7427C16.1197 18.7187 16.8347 17.6437 17.5077 16.5317C18.3027 15.2567 18.6382 14.0057 18.6522 13.9387C18.6242 13.9287 16.3682 13.0127 16.3542 9.7827ZM14.2607 3.7887C14.8362 3.0717 15.2277 2.1087 15.1207 1.1357C14.2977 1.1767 13.2557 1.7287 12.6527 2.4317C12.1267 3.0457 11.6517 4.0417 11.7727 4.9767C12.7027 5.0517 13.6607 4.4857 14.2607 3.7887Z"
+                                                fill="#000" fill-opacity="1"></path>
+                                        </g>
+                                    </svg>
+                                </span>
+                            </button>
+                        </div>
+
+                        <!-- Divider -->
+                        <div role="separator"
+                            class="divider van-divider van-divider--hairline van-divider--content-center">
+                            <span class="divider-text">O con el correo electrónico</span>
+                        </div>
+                    </div>
+
+                    <!-- Formulario de email -->
+                    <div class="my-4">
+                        <form novalidate="novalidate" class="v-form" (ngSubmit)="onSubmit()">
+                            <div
+                                class="v-input v-input--hide-details v-input--is-label-active v-input--is-dirty v-input--dense theme--light v-text-field v-text-field--single-line v-text-field--solo v-text-field--solo-flat v-text-field--is-booted v-text-field--enclosed v-text-field--outlined v-text-field--placeholder">
+                                <div class="v-input__control">
+                                    <div class="v-input__slot" style="height: 50px">
+                                        <div style="width: 100%;" class="v-text-field__slot">
+                                            <input [(ngModel)]="email" name="email" maxlength="50" id="email-input"
+                                                placeholder="Dirección de correo electrónico" type="email" required
+                                                (input)="onEmailChange()"
+                                                [class.invalid]="!isEmailValid && email.length > 0" />
+                                        </div>
+                                        <div class="v-input__append-inner">
+                                            <div class="animation-icon"
+                                                style="width: 100%; height: 100%; overflow: hidden; margin: 0px auto;">
+                                                <!-- Icono de validación aquí si es necesario -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="submit" [disabled]="!isEmailValid || isLoading"
+                                class="verify-btn v-btn v-btn--outlined theme--light v-size--default"
+                                [class.loading]="isLoading">
+                                <span class="v-btn__content" *ngIf="!isLoading">Continuar</span>
+                                <span class="v-btn__content" *ngIf="isLoading">
+                                    <div class="loading-spinner"></div>
+                                    Procesando...
+                                </span>
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Términos y condiciones -->
+                    <div class="my-6">
+                        <div class="text-center my-4">
+                            <span class="terms-description">
+                                Una vez que haga clic en continuar, significa que está de acuerdo con nuestros
+                                <a href="/terms-conditions" class="font-weight-700 cursor-pointer">
+                                    Términos y condiciones
+                                </a>
+                                y que ha leído nuestra
+                                <a href="/privacy-policy" class="font-weight-700 cursor-pointer">
+                                    Política de privacidad
+                                </a>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PASO 2: Login con contraseña -->
+                <div *ngIf="currentStep === 'login'" class="password-login-card">
+                    <div class="login-title d-flex justify-center align-center my-2">
+                        Iniciar sesión
+                    </div>
+
+                    <div class="my-4">
+                        <form novalidate="novalidate" class="v-form" (ngSubmit)="onPasswordLogin()">
+                            <!-- Campo de email (solo lectura) -->
+                            <div
+                                class="v-input v-input--hide-details v-input--is-label-active v-input--is-dirty v-input--dense theme--light v-text-field v-text-field--single-line v-text-field--solo v-text-field--solo-flat v-text-field--is-booted v-text-field--enclosed v-text-field--outlined v-text-field--placeholder">
+                                <div class="v-input__control">
+                                    <div class="v-input__slot" style="height: 50px;">
+                                        <fieldset aria-hidden="true">
+                                            <legend><span class="notranslate">​</span></legend>
+                                        </fieldset>
+                                        <div class="v-text-field__slot">
+                                            <input maxlength="50" [value]="email" placeholder="Dirección del Email"
+                                                type="text" readonly>
+                                        </div>
+                                        <div class="v-input__append-inner">
+                                            <div class="animation-icon"
+                                                style="width: 100%; height: 100%; overflow: hidden; margin: 0px auto;">
+                                                <!-- Email Icon SVG -->
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32"
+                                                    height="32">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        fill-opacity="0" stroke="rgb(204,204,204)" stroke-opacity="1"
+                                                        stroke-width="2"
+                                                        d=" M0,-8 C0,-8 8,-8 8,-8 C9.100000381469727,-8 10,-7.099999904632568 10,-6 C10,-6 10,6 10,6 C10,7.099999904632568 9.100000381469727,8 8,8 C8,8 -8,8 -8,8 C-9.100000381469727,8 -10,7.099999904632568 -10,6 C-10,6 -10,-6 -10,-6 C-10,-7.099999904632568 -9.100000381469727,-8 -8,-8 C-8,-8 0,-8 0,-8z">
+                                                    </path>
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        fill-opacity="0" stroke="rgb(204,204,204)" stroke-opacity="1"
+                                                        stroke-width="2"
+                                                        d=" M10,-3.5 C10,-3.5 0,3.5 0,3.5 C0,3.5 -10,-3.5 -10,-3.5">
+                                                    </path>
+                                                </svg>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Campo de contraseña -->
+                            <div
+                                class="v-input v-input--hide-details v-input--dense theme--light v-text-field v-text-field--single-line v-text-field--solo v-text-field--solo-flat v-text-field--is-booted v-text-field--enclosed v-text-field--outlined v-text-field--placeholder">
+                                <div class="v-input__control">
+                                    <div class="v-input__slot" style="height: 50px;">
+                                        <fieldset aria-hidden="true">
+                                            <legend><span class="notranslate">​</span></legend>
+                                        </fieldset>
+                                        <div class="v-text-field__slot">
+                                            <input [(ngModel)]="password" name="password" maxlength="20"
+                                                placeholder="La contraseña" [type]="showPassword ? 'text' : 'password'">
+                                        </div>
+                                        <div class="v-input__append-inner">
+                                            <div (click)="togglePasswordVisibility()" style="cursor: pointer;">
+                                                <div class="animation-icon"
+                                                    style="width: 100%; height: 100%; overflow: hidden; margin: 0px auto;">
+                                                    <!-- Password Icon SVG -->
+                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"
+                                                        width="32" height="32">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            fill-opacity="0" stroke="rgb(204,204,204)"
+                                                            stroke-opacity="1" stroke-width="2"
+                                                            d=" M0,-3 C1.656999945640564,-3 3,-1.656999945640564 3,0 C3,1.656999945640564 1.656999945640564,3 0,3 C-1.656999945640564,3 -3,1.656999945640564 -3,0 C-3,-1.656999945640564 -1.656999945640564,-3 0,-3z">
+                                                        </path>
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            fill-opacity="0" stroke="rgb(204,204,204)"
+                                                            stroke-opacity="1" stroke-width="2"
+                                                            d=" M-11,0 C-11,0 -7,8 0,8 C7,8 11,0 11,0"></path>
+                                                    </svg>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Enlaces de ayuda -->
+                    <div class="code-login d-flex justify-space-between mt-4 mb-6">
+                        <a href="#" class="text-left mr-2" (click)="$event.preventDefault()">
+                            <span>¿Ha olvidado su contraseña?</span>
+                        </a>
+
+                    </div>
+
+                    <!-- Botón de login -->
+                    <button type="button" [disabled]="!password || isLoading" (click)="onPasswordLogin()"
+                        class="login-btn v-btn v-btn--outlined theme--light v-size--default"
+                        [class.v-btn--disabled]="!password || isLoading">
+                        <span class="v-btn__content" *ngIf="!isLoading">Iniciar sesión</span>
+                        <span class="v-btn__content" *ngIf="isLoading">
+                            <div class="loading-spinner"></div>
+                            Iniciando sesión...
+                        </span>
+                    </button>
+
+                    <!-- Enlace de registro -->
+                    <div class="d-flex justify-center align-center flex-wrap register">
+                        <span class="mr-1">¿No tiene una cuenta?</span>
+                        <a href="#" class="register-link" (click)="$event.preventDefault(); goBackToEmailFromLogin()">
+                            <span>Únase gratis</span>
+                        </a>
+                    </div>
+
+                    <!-- Botón volver -->
+                    <div class="show-more text-center ma-4">
+                        <span class="font-weight-700 cursor-pointer" (click)="goBackToEmailFromLogin()">
+                            ← Volver al correo
+                        </span>
+                    </div>
+                </div>
+
+                <!-- PASO 3: Verificación de Código -->
+                <div *ngIf="currentStep === 'verification'" class="email-verification-card">
+                    <div class="verification-title my-2">
+                        <span>Verifica tu correo electrónico</span>
+                    </div>
+
+                    <div class="verification-description my-6 text-center">
+                        <span>Te hemos enviado un código de verificación a
+                            <span class="font-weight-700">{{email.toUpperCase()}}</span>.
+                            Ingresa el código para completar el registro
+                        </span>
+                    </div>
+
+                    <div class="ma-auto opt-input">
+                        <div class="simple-otp-container">
+                            <input *ngFor="let digit of verificationCode; let i = index; trackBy: trackByIndex"
+                                type="text" [id]="'simple-otp-' + i" class="simple-otp-field" maxlength="1"
+                                [(ngModel)]="verificationCode[i]" (keydown)="onCodeKeydown(i, $event)"
+                                (paste)="onCodePaste(i, $event)" (input)="focusNextOtp(i, $event)" autocomplete="off"
+                                spellcheck="false" [autofocus]="i === 0" #otpInput{{i}}>
+                        </div>
+                    </div>
+
+                    <div>
+                        <button type="button" [disabled]="!isCodeComplete"
+                            class="base-btn verify-code-btn v-btn v-btn--fab v-btn--has-bg v-btn--round theme--light v-size--default"
+                            [class.v-btn--disabled]="!isCodeComplete" (click)="verifyCode()">
+                            <span class="v-btn__content">Continuar</span>
+                        </button>
+
+                        <button type="button"
+                            class="base-btn resend-code-btn v-btn v-btn--fab v-btn--has-bg v-btn--round theme--light v-size--default"
+                            (click)="resendCode()">
+                            <span class="v-btn__content">Reenviar código</span>
+                        </button>
+                    </div>
+
+                    <div class="email-tips text-center mt-6 mb-4">
+                        <span>¿No has recibido el correo? Puede que debas revisar tu carpeta de spam.</span>
+                    </div>
+
+                    <div>
+                        <div class="show-more text-center ma-4">
+                            <span class="font-weight-700 cursor-pointer" (click)="goBackToEmail()">
+                                ← Volver al correo
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Modal Set Password -->
+<div *ngIf="setPasswordDialogVisible" class="set-password-modal">
+    <div class="modal-content">
+        <h2 class="text-center">Establecer contraseña</h2>
+        <p class="text-center">
+            Para mejorar la seguridad de tu cuenta y evitar problemas de acceso por no poder recibir códigos de
+            verificación,
+            por favor establece una contraseña de acceso.
+        </p>
+        <p class="email">{{ setPasswordEmail }}</p>
+        <form (ngSubmit)="onSetPassword()">
+            <div
+                class="v-input v-input--hide-details v-input--is-label-active v-input--is-dirty v-input--dense theme--light v-text-field v-text-field--single-line v-text-field--solo v-text-field--solo-flat v-text-field--is-booted v-text-field--enclosed v-text-field--outlined v-text-field--placeholder">
+                <div class="v-input__control">
+                    <div class="v-input__slot" style="height: 50px">
+                        <div class="v-text-field__slot">
+                            <input type="password" maxlength="20" placeholder="Nueva contraseña"
+                                [(ngModel)]="newPassword" name="newPassword" required />
+                        </div>
+                        <div class="v-input__append-inner">
+                            <div class="animation-icon"
+                                style="width: 100%; height: 100%; overflow: hidden; margin: 0px auto;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div
+                class="v-input v-input--hide-details v-input--is-label-active v-input--is-dirty v-input--dense theme--light v-text-field v-text-field--single-line v-text-field--solo v-text-field--solo-flat v-text-field--is-booted v-text-field--enclosed v-text-field--outlined v-text-field--placeholder">
+                <div class="v-input__control">
+                    <div class="v-input__slot" style="height: 50px">
+                        <div class="v-text-field__slot">
+                            <input type="password" maxlength="20" placeholder="Confirmar contraseña"
+                                [(ngModel)]="confirmPassword" name="confirmPassword" required />
+                        </div>
+                        <div class="v-input__append-inner">
+                            <div class="animation-icon"
+                                style="width: 100%; height: 100%; overflow: hidden; margin: 0px auto;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="password-tips">
+                <div>Tu contraseña debe tener:</div>
+                <div>• 8 a 20 caracteres</div>
+                <div>• Letras y números</div>
+                <div>• Las dos contraseñas que ingresaste deben ser idénticas</div>
+            </div>
+            <div *ngIf="passwordError" class="error">{{ passwordError }}</div>
+
+            <button type="submit" [disabled]="!canContinue()" class="reset-btn red-btn">Continuar</button>
+        </form>
+    </div>
+</div>

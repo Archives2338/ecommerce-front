@@ -35,8 +35,12 @@
 
             <ul>
                 <li>
-                    <span class="label">Tiempo restante</span><span class="remind">{{this.tiempoRestante}}</span>
+                    <span class="label">Tiempo restante:</span> <span class="tiempo-restante"
+                        [ngClass]="countdownClass">
+                        {{ tiempoRestante }}
+                    </span>
                 </li>
+
                 <li>
                     <span class="label">Tiempo de inicio</span><span>{{card.fecha_inicio}} 12:00:00</span>
                 </li>
@@ -57,21 +61,26 @@
                             <div class="label">Llave maestra</div>
                             <p>Último cambio hace 8 días</p>
                         </div>
-                        <button *ngIf="showPassword ==false" type="button" (click)="showPasswordMethod()"
+                        <button *ngIf="!showPassword" type="button" (click)="showPasswordMethod()"
                             class="v-btn v-theme--light v-btn--density-default v-btn--size-default v-btn--variant-outlined password-btn">
                             <span class="v-btn__overlay"></span><span class="v-btn__underlay"></span><span
                                 class="v-btn__content" data-no-activator="">Mostrar Llave maestra</span>
                         </button>
-                        <div *ngIf="showPassword ==true"
-                            class="d-flex align-center justify-space-between cursor-pointer">
-                            <span class="password">{{card.contrasena}}</span><img
-                                src="https://static.gamsgocdn.com/gg2/images/ticket/copy.webp" class="ml-4" />
+                        <div *ngIf="showPassword" class="password-container">
+                            <div class="d-flex align-center justify-space-between cursor-pointer">
+                                <span class="password">{{card.contrasena}}</span>
+                                <img src="https://static.gamsgocdn.com/gg2/images/ticket/copy.webp" class="ml-4" />
+                            </div>
+                            <button type="button" (click)="hidePassword()"
+                                class="v-btn v-theme--light v-btn--density-default v-btn--size-small v-btn--variant-text mt-2">
+                                <span class="v-btn__overlay"></span><span class="v-btn__underlay"></span>
+                            </button>
                         </div>
 
                     </div>
-                    <div class="password-reset">
+                    <!-- <div class="password-reset">
                         ¿No funciona?<span class="reset">Haga clic a reiniciar</span>
-                    </div>
+                    </div> -->
                 </li>
 
                 <!-- <li  class="ticket-profile">

@@ -6,23 +6,43 @@
             <div data-v-bdfc722c="" class="search-btn">
                 <div data-v-bdfc722c="" class="iconfont icon-search"></div> Buscar
             </div>
-            <!-- Botón temporal para probar el toggle -->
-            <button (click)="toggleSubscriptions()"
-                style="margin-left: 10px; padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px;">
-                {{ hasSubscriptions ? 'Ocultar Suscripciones' : 'Mostrar Suscripciones' }}
-            </button>
+            <!-- Botón temporal para probar recargar -->
+            <!-- <button (click)="refreshSubscriptions()"
+                style="margin-left: 10px; padding: 8px 16px; background: #28a745; color: white; border: none; border-radius: 4px;">
+                🔄 Recargar Suscripciones
+            </button> -->
         </div><!---->
+
+        <!-- Estado de carga -->
+        <div *ngIf="isLoading" class="loading-container" style="text-align: center; padding: 40px;">
+            <div class="loading-spinner"
+                style="margin: 0 auto 20px; width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite;">
+            </div>
+            <p>Cargando suscripciones...</p>
+        </div>
+
+        <!-- Error de carga -->
+        <div *ngIf="loadingError && !isLoading" class="error-container"
+            style="text-align: center; padding: 40px; color: #dc3545;">
+            <p>❌ Error al cargar las suscripciones. Mostrando datos de ejemplo.</p>
+            <button (click)="refreshSubscriptions()"
+                style="padding: 8px 16px; background: #dc3545; color: white; border: none; border-radius: 4px; margin-top: 10px;">
+                Reintentar
+            </button>
+        </div>
+
         <div data-v-5741bedf="" data-v-bdfc722c="" id="macy" style="position: relative;">
             <!-- Mostrar cards cuando hay suscripciones -->
-            <div *ngIf="hasSubscriptions" class="subscriptions-container">
-                <app-subscription-card *ngFor="let subscription of mockSubscriptions" [card]="subscription"
-                    [tiempoRestante]="tiempoRestante">
+            <div *ngIf="hasSubscriptions && !isLoading" class="subscriptions-container">
+                <app-subscription-card *ngFor="let subscription of subscriptions; trackBy: trackBySubscriptionId"
+                    [card]="subscription" [tiempoRestante]="subscription.tiempoRestante"
+                    [countdownClass]="getCountdownClass(subscription)">
                 </app-subscription-card>
             </div>
         </div>
         <!-- Mostrar mensaje cuando no hay suscripciones -->
-        <div *ngIf="!hasSubscriptions" data-v-c0515d83="" data-v-bdfc722c="" class="result-box"><img data-v-c0515d83=""
-                src="https://static.gamsgocdn.com/gg2_new/images/order/no-result.webp">
+        <div *ngIf="!hasSubscriptions && !isLoading" data-v-c0515d83="" data-v-bdfc722c="" class="result-box"><img
+                data-v-c0515d83="" src="https://static.gamsgocdn.com/gg2_new/images/order/no-result.webp">
             <h4 data-v-c0515d83="">No hay información de suscripción disponible</h4>
             <p data-v-c0515d83="">Puedes ir y ver lo que quieres comprar.</p><a data-v-c0515d83=""
                 class="v-btn v-theme--light v-btn--density-default v-btn--rounded v-btn--size-default v-btn--variant-text button"

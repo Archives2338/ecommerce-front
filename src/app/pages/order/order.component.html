@@ -1,68 +1,137 @@
-<div data-v-25fe23b3="" class="order-wrapper-box">
-    <div data-v-25fe23b3="" class="order-box">
-        <div data-v-25fe23b3="" class="order-tab-box">
-            <div data-v-25fe23b3="" class="channel"><a data-v-25fe23b3="" href="/es/subscription"
-                    class="">Suscripción</a><b data-v-25fe23b3="" class="active">Pedidos históricos</b></div>
-            <div data-v-25fe23b3="" class="filter-box">
-                <div class="v-slide-group v-tabs v-tabs--horizontal v-tabs--align-tabs-start v-tabs--density-default"
-                    tabindex="-1" role="tablist" data-v-25fe23b3=""><!---->
-                    <div class="v-slide-group__container">
-                        <div class="v-slide-group__content"><button data-v-25fe23b3="" type="button"
-                                class="v-btn selected v-tab--selected v-theme--light v-btn--density-default v-btn--size-default v-btn--variant-text v-tab order-tab"
-                                tabindex="0" role="tab" aria-selected="true" value=""><span
-                                    class="v-btn__overlay"></span><span class="v-btn__underlay"></span><!----><span
-                                    class="v-btn__content"
-                                    data-no-activator="">Todos<!----></span><!----><!----></button><button
-                                data-v-25fe23b3="" type="button"
-                                class="v-btn v-theme--light v-btn--density-default v-btn--size-default v-btn--variant-text v-tab order-tab"
-                                tabindex="-1" role="tab" aria-selected="false" value="1"><span
-                                    class="v-btn__overlay"></span><span class="v-btn__underlay"></span><!----><span
-                                    class="v-btn__content" data-no-activator="">Procesando
-                                    (0)<!----></span><!----><!----></button><button data-v-25fe23b3="" type="button"
-                                class="v-btn v-theme--light v-btn--density-default v-btn--size-default v-btn--variant-text v-tab order-tab"
-                                tabindex="-1" role="tab" aria-selected="false" value="2"><span
-                                    class="v-btn__overlay"></span><span class="v-btn__underlay"></span><!----><span
-                                    class="v-btn__content" data-no-activator="">Terminado
-                                    (0)<!----></span><!----><!----></button><button data-v-25fe23b3="" type="button"
-                                class="v-btn v-theme--light v-btn--density-default v-btn--size-default v-btn--variant-text v-tab order-tab"
-                                tabindex="-1" role="tab" aria-selected="false" value="3"><span
-                                    class="v-btn__overlay"></span><span class="v-btn__underlay"></span><!----><span
-                                    class="v-btn__content" data-no-activator="">Pendiente de resolución
-                                    (0)<!----></span><!----><!----></button><button data-v-25fe23b3="" type="button"
-                                class="v-btn v-theme--light v-btn--density-default v-btn--size-default v-btn--variant-text v-tab order-tab"
-                                tabindex="-1" role="tab" aria-selected="false" value="4"><span
-                                    class="v-btn__overlay"></span><span class="v-btn__underlay"></span><!----><span
-                                    class="v-btn__content" data-no-activator="">Reintegrado
-                                    (0)<!----></span><!----><!----></button><button data-v-25fe23b3="" type="button"
-                                class="v-btn v-theme--light v-btn--density-default v-btn--size-default v-btn--variant-text v-tab order-tab"
-                                tabindex="-1" role="tab" aria-selected="false" value="5"><span
-                                    class="v-btn__overlay"></span><span class="v-btn__underlay"></span><!----><span
-                                    class="v-btn__content" data-no-activator="">Pedidos cancelados
-                                    (0)<!----></span><!----><!----></button></div>
-                    </div><!---->
-                </div><!---->
-                <div data-v-25fe23b3="" class="search-box">
-                    <div data-v-b5d1f676="" data-v-25fe23b3="" class="input-wrapper-box mr-4">
-                        <div data-v-b5d1f676="" class="input">
-                            <div data-v-b5d1f676="" class="iconfont icon-search"></div><input data-v-b5d1f676=""
-                                placeholder="Buscar ID de pedido..." value=""><!---->
+<div class="ticket-wrapper-box">
+    <div class="ticket-box">
+        <!-- Navigation -->
+        <div class="channel">
+            <a routerLink="/subscription">Suscripción</a>
+            <b class="active">Pedidos históricos</b>
+        </div>
+
+        <!-- Filter Buttons -->
+        <div class="container_buttons">
+            <button class="button" [class.selected]="selectedTab === 'all'" (click)="selectTab('all')">
+                <span>Todo ({{ orderCounts.all }})</span>
+            </button>
+            <button class="button" [class.selected]="selectedTab === 'processing'" (click)="selectTab('processing')">
+                <span>Procesando ({{ orderCounts.processing }})</span>
+            </button>
+            <button class="button" [class.selected]="selectedTab === 'completed'" (click)="selectTab('completed')">
+                <span>Terminado ({{ orderCounts.completed }})</span>
+            </button>
+            <button class="button" [class.selected]="selectedTab === 'dispute'" (click)="selectTab('dispute')">
+                <span>Pendiente de resolución ({{ orderCounts.dispute }})</span>
+            </button>
+            <button class="button" [class.selected]="selectedTab === 'refunded'" (click)="selectTab('refunded')">
+                <span>Reintegrado ({{ orderCounts.refunded }})</span>
+            </button>
+            <button class="button" [class.selected]="selectedTab === 'cancelled'" (click)="selectTab('cancelled')">
+                <span>Cancelado ({{ orderCounts.cancelled }})</span>
+            </button>
+        </div>
+
+        <!-- Search Box -->
+        <div class="search-container">
+            <div class="search-box">
+                <input type="text" placeholder="Buscar ID de pedido..." (input)="searchOrders($event)"
+                    [value]="searchQuery">
+            </div>
+        </div>
+
+        <!-- Error State -->
+        <div *ngIf="error && !isLoading" class="error-container">
+            <p class="error-message">{{ error }}</p>
+            <button class="button" (click)="reloadOrders()">
+                <span>Reintentar</span>
+            </button>
+        </div>
+
+        <!-- Orders List -->
+        <ul *ngIf="hasOrders && !isLoading">
+            <li *ngFor="let order of orders">
+                <div class="order-middle">
+                    <div class="order-status">
+                        <div class="logo-box">
+                            <img [src]="order.logo" [alt]="order.serviceName" />
+                            <div class="name-box ml-8">
+                                <p>
+                                    <b>{{ order.serviceName }}</b>
+                                    <span></span>
+                                </p>
+                                <b>{{ order.currency }} {{ order.price }}</b>
+                            </div>
+                        </div>
+                        <div class="status">
+                            <span [ngClass]="order.statusClass">{{ order.status }}</span>
                         </div>
                     </div>
-                    <div data-v-25fe23b3="" class="filters">
-                        <div data-v-25fe23b3="" class="iconfont icon-filter-alt mr-2"></div> Filtros
+
+                    <div class="order-info mt-6">
+                        <div>
+                            <p class="title">Número del pedido</p>
+                            <p>{{ order.orderNumber }}</p>
+                        </div>
+                        <div>
+                            <p class="title">Tipo:</p>
+                            <p>{{ order.type }}</p>
+                        </div>
+                        <div>
+                            <p class="title">Tiempo de creación:</p>
+                            <p>{{ order.creationDate }}</p>
+                        </div>
+                        <div>
+                            <p class="title">Tiempo efectivo:</p>
+                            <p>{{ order.creationDate }}<span class="sep"></span>{{ order.creationDate }}</p>
+                        </div>
                     </div>
                 </div>
-            </div><!---->
+
+                <div class="order-footer">
+                    <div class="order-price">
+                        Cantidad total<b class="ml-6">{{ order.currency }} {{ order.totalAmount }}</b>
+                    </div>
+                    <div class="order-btn-box">
+                        <button type="button"
+                            class="v-btn v-theme--light v-btn--density-default v-btn--rounded v-btn--size-default v-btn--variant-text order-btn other-btn"
+                            (click)="manageOrder(order)">
+                            <span class="v-btn__overlay"></span>
+                            <span class="v-btn__underlay"></span>
+                            <span class="v-btn__content">
+                                Gestionar pedido
+                                <svg class="ml-2" xmlns="http://www.w3.org/2000/svg" fill="none" width="5" height="8"
+                                    viewBox="0 0 5 8">
+                                    <path
+                                        d="M1.76777,0.30601911174171276C1.36337,-0.10200588825828723,0.707702,-0.10200588825828723,0.303301,0.30601911174171276C-0.1011,0.7140451117417128,-0.1011,1.3755901117417129,0.303301,1.7836101117417127C0.303301,1.7836101117417127,2.5,4.000000111741713,2.5,4.000000111741713C2.5,4.000000111741713,0.303301,6.216390111741712,0.303301,6.216390111741712C-0.1011,6.624410111741713,-0.1011,7.2859501117417125,0.303301,7.693980111741713C0.707702,8.102010111741713,1.36337,8.102010111741713,1.76777,7.693980111741713C1.76777,7.693980111741713,4.6967,4.738800111741713,4.6967,4.738800111741713C4.72197,4.7132901117417125,4.74567,4.686800111741713,4.76779,4.659440111741713C5.09952,4.2490701117417125,5.07583,3.643730111741713,4.6967,3.261200111741713C4.6967,3.261200111741713,1.76777,0.30601911174171276,1.76777,0.30601911174171276Z"
+                                        fill="#333232" fill-opacity="1"></path>
+                                </svg>
+                            </span>
+                        </button>
+                        <a class="v-btn v-theme--light v-btn--density-default v-btn--rounded v-btn--size-default v-btn--variant-text order-btn view-btn ml-4"
+                            routerLink="/subscription"
+                            style="color: rgb(255, 255, 255); caret-color: rgb(255, 255, 255);">
+                            <span class="v-btn__overlay"></span>
+                            <span class="v-btn__underlay"></span>
+                            <span class="v-btn__content">Ver suscripción</span>
+                        </a>
+                    </div>
+                </div>
+            </li>
+        </ul>
+
+        <!-- Loading State -->
+        <div *ngIf="isLoading" class="loading-container">
+            <p>Cargando pedidos...</p>
         </div>
-        <ul data-v-3674ed25=""></ul><!----><!----><!----><!---->
-        <div data-v-c0515d83="" data-v-25fe23b3="" class="result-box noResult"><img data-v-c0515d83=""
-                src="https://static.gamsgocdn.com/gg2_new/images/order/no-result.webp">
-            <h4 data-v-c0515d83="">No se encontraron pedidos relevantes</h4>
-            <p data-v-c0515d83="">Puedes ir y ver lo que quieres comprar.</p><a data-v-c0515d83=""
-                class="v-btn v-theme--light v-btn--density-default v-btn--rounded v-btn--size-default v-btn--variant-text button"
-                href="/es" style="color: rgb(255, 255, 255); caret-color: rgb(255, 255, 255);"><span
-                    class="v-btn__overlay"></span><span class="v-btn__underlay"></span><!----><span
-                    class="v-btn__content" data-no-activator="">ir a comprar</span><!----><!----></a>
+
+        <!-- No Results -->
+        <div *ngIf="!hasOrders && !isLoading" class="result-box noResult">
+            <img src="https://static.gamsgocdn.com/gg2_new/images/order/no-result.webp" alt="No results">
+            <h4>No se encontraron pedidos relevantes</h4>
+            <p>Puedes ir y ver lo que quieres comprar.</p>
+            <a class="v-btn v-theme--light v-btn--density-default v-btn--rounded v-btn--size-default v-btn--variant-text button"
+                routerLink="/home" style="color: rgb(255, 255, 255); caret-color: rgb(255, 255, 255);">
+                <span class="v-btn__overlay"></span>
+                <span class="v-btn__underlay"></span>
+                <span class="v-btn__content">ir a comprar</span>
+            </a>
         </div>
     </div>
 </div>

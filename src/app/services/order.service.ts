@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, BehaviorSubject } from 'rxjs';
+import { Observable, BehaviorSubject, throwError } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
+import { Router } from '@angular/router';
 import { environment } from '../../environments/environment';
 import { ApiService, ApiResponse } from './api.service';
 
@@ -31,11 +33,20 @@ export interface Order {
   plan_name: string;
   items: OrderItem[];
   total: number;
-  order_status: 'pending' | 'active' | 'expired';
+  order_status: 'pending' | 'active' | 'expired' | 'paid';
   paymentMethod: string;
   ostatus: number;
+  currency?: string;
   starts_at?: Date;
   expires_at?: Date;
+  created_at: Date;
+  updated_at: Date;
+  service?: {
+    _id: string;
+    type_id: number;
+    icon: string;
+    name: string;
+  };
   access_info?: {
     account_id: string;
     profile_name: string;
@@ -51,8 +62,6 @@ export interface Order {
     payment_method: string;
     paid_at: Date;
   };
-  created_at: Date;
-  updated_at: Date;
 }
 
 export interface OrderHistoryResponse {
@@ -88,7 +97,8 @@ export class OrderService {
 
   constructor(
     private apiService: ApiService,
-    private http: HttpClient
+    private http: HttpClient,
+    private router: Router
   ) {}
 
   /**
@@ -109,6 +119,20 @@ export class OrderService {
       'http://localhost:3000/api/orders',
       orderData,
       corsHeaders
+    ).pipe(
+      catchError(error => {
+        console.error('❌ Error creating order:', error);
+        
+        if (error.status === 401) {
+          console.log('🔐 Token inválido (401) - Limpiando localStorage y redirigiendo a /auth');
+          // Limpiar localStorage completamente
+          localStorage.clear();
+          // Redirigir a auth
+          this.router.navigate(['/auth']);
+        }
+        
+        return throwError(() => error);
+      })
     );
   }  /**
    * Obtener orden por ID
@@ -173,14 +197,75 @@ export class OrderService {
       });
     }
 
-    return this.apiService.get<ApiResponse<OrderHistoryResponse>>(
-      this.endpoints.myHistory,
-      {
-        params,
-        headers: {
-          'Authorization': `Bearer ${this.getAuthToken()}`
+    const corsHeaders = {
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${this.getAuthToken()}`
+      },
+      params
+    };
+
+    return this.http.get<ApiResponse<OrderHistoryResponse>>(
+      'http://localhost:3000/api/orders/my/history',
+      corsHeaders
+    ).pipe(
+      catchError(error => {
+        console.error('❌ Error getting order history:', error);
+        
+        if (error.status === 401) {
+          console.log('🔐 Token inválido (401) - Limpiando localStorage y redirigiendo a /auth');
+          localStorage.clear();
+          this.router.navigate(['/auth']);
         }
-      }
+        
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Obtener solo las suscripciones activas (órdenes pagadas y vigentes)
+   */
+  getActiveSubscriptions(): Observable<ApiResponse<OrderHistoryResponse>> {
+    return this.getMyOrderHistory({
+      order_status: 2, // 2 = pagado según el schema
+      page: 1,
+      limit: 50 // Traer hasta 50 suscripciones activas
+    });
+  }
+
+  /**
+   * Obtener solo las suscripciones completamente activas (con credenciales asignadas)
+   */
+  getFullyActiveSubscriptions(): Observable<ApiResponse<OrderHistoryResponse>> {
+    return this.getActiveSubscriptions().pipe(
+      map((response: ApiResponse<OrderHistoryResponse>) => {
+        if (response.code === 0 && response.data?.orders) {
+          // Filtrar solo las órdenes que tienen credenciales de acceso asignadas
+          const activeOrders = response.data.orders.filter((order: Order) => 
+            order.access_info?.access_credentials?.email && 
+            order.access_info?.access_credentials?.password &&
+            order.access_info?.access_credentials?.email !== 'Pendiente de asignación' &&
+            order.access_info?.access_credentials?.password !== 'Pendiente de asignación'
+          );
+
+          console.log(`🔍 Filtradas ${activeOrders.length} suscripciones con credenciales de ${response.data.orders.length} órdenes pagadas`);
+
+          return {
+            ...response,
+            data: {
+              ...response.data,
+              orders: activeOrders,
+              pagination: {
+                ...response.data.pagination,
+                total: activeOrders.length
+              }
+            }
+          };
+        }
+        return response;
+      })
     );
   }
 

@@ -86,6 +86,7 @@ a,
 #macy {
   width: 100%;
   box-sizing: border-box;
+  padding: 20px;
 }
 
 // Estilos mejorados para elementos específicos
@@ -1457,4 +1458,62 @@ mat-icon {
       box-shadow: 0 4px 24px #00000014;
       width: 100%
   }
+}
+
+// Animación para el countdown
+@keyframes countdown-pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+// Estilos para el tiempo restante
+.tiempo-restante {
+    animation: countdown-pulse 2s ease-in-out infinite;
+    font-weight: bold;
+    color: #28a745 !important;
+    margin-left: 15px !important; // Separación del label
+    padding: 4px 8px !important; // Padding interno
+    border-radius: 4px !important; // Bordes redondeados
+    background: rgba(40, 167, 69, 0.1) !important; // Fondo sutil verde
+    display: inline-block !important; // Para que el padding se aplique correctamente
+    white-space: nowrap !important; // Evitar que se vaya a otra línea
+    font-size: 0.9em !important; // Ligeramente más pequeño para que quepa mejor
+    
+    &.warning {
+        color: #ffc107 !important; // Amarillo para menos de 7 días
+        background: rgba(255, 193, 7, 0.1) !important; // Fondo sutil amarillo
+    }
+    
+    &.danger {
+        color: #dc3545 !important; // Rojo para menos de 1 día
+        background: rgba(220, 53, 69, 0.1) !important; // Fondo sutil rojo
+        animation-duration: 1s; // Pulsar más rápido cuando está cerca de expirar
+    }
+    
+    &.expired {
+        color: #6c757d !important; // Gris para expirado
+        background: rgba(108, 117, 125, 0.1) !important; // Fondo sutil gris
+        animation: none;
+    }
+}
+
+// Mejorar el layout del item de tiempo restante
+.tiempo-restante-item {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    flex-wrap: nowrap !important; // No permitir wrap
+    gap: 10px !important; // Espacio entre elementos
+    
+    .label {
+        flex-shrink: 0 !important; // El label no se encoge
+        white-space: nowrap !important; // El label no se corta
+    }
+    
+    .tiempo-restante {
+        flex-shrink: 1 !important; // El countdown puede encogerse si es necesario
+        text-align: right !important; // Alineado a la derecha
+        min-width: 0 !important; // Permite que el texto se truncate si es necesario
+    }
 }

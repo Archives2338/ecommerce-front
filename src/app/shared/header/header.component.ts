@@ -8,6 +8,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { ContentService, HeaderContent, HeaderItem } from '../../services/content.service';
+import { AuthService } from '../../services/auth.service';
 
 export interface HeaderConfig {
   backgroundColor: string;
@@ -83,7 +84,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   constructor(
     private contentService: ContentService,
-    private router: Router
+    private router: Router,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -101,6 +103,27 @@ export class HeaderComponent implements OnInit, OnDestroy {
       .subscribe(content => {
         if (content.header) {
           this.headerContent = content.header;
+        }
+      });
+
+    // Suscribirse al estado de autenticación
+    this.authService.isAuthenticated$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(isAuthenticated => {
+        this.isLoggedIn = isAuthenticated;
+        console.log('🔐 Estado de autenticación actualizado:', isAuthenticated);
+      });
+
+    // Suscribirse al usuario actual
+    this.authService.currentUser$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(user => {
+        if (user) {
+          console.log('👤 Usuario actual:', user);
+          // Podrías establecer un avatar basado en el usuario aquí
+          // this.userAvatar = user.avatar || '';
+        } else {
+          this.userAvatar = '';
         }
       });
   }
@@ -276,9 +299,18 @@ export class HeaderComponent implements OnInit, OnDestroy {
    * Cierra sesión
    */
   logout(): void {
-    // Lógica de logout
+    console.log('🔐 Cerrando sesión desde header...');
+    
+    // Usar el AuthService para manejar el logout correctamente
+    this.authService.logout();
+    
+    // Actualizar estado local del header
     this.isLoggedIn = false;
     this.userAvatar = '';
+    
+    console.log('✅ Sesión cerrada, redirigiendo a home');
+    
+    // Redirigir al home
     this.router.navigate(['/']);
   }
 
